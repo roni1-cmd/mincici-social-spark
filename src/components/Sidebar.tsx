@@ -1,4 +1,4 @@
-import { Home, Search, Bell, Mail, User, LogOut, Menu } from "lucide-react";
+import { Home, Search, Bell, Mail, User, LogOut, Menu, Settings } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ const Sidebar = () => {
     { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: Mail, label: "Messages", path: "/messages" },
     { icon: User, label: "Profile", path: "/profile" },
+    { icon: Settings, label: "Settings", path: "/settings" },
   ];
 
   const SidebarContent = () => (

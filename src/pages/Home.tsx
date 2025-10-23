@@ -10,6 +10,9 @@ interface Post {
   id: string;
   userId: string;
   userEmail: string;
+  username?: string;
+  displayName?: string;
+  photoURL?: string;
   content: string;
   imageUrl?: string;
   timestamp: string;
@@ -66,6 +69,9 @@ const Home = () => {
                 <PostCard
                   key={post.id}
                   userEmail={post.userEmail}
+                  username={post.username}
+                  displayName={post.displayName}
+                  photoURL={post.photoURL}
                   content={post.content}
                   imageUrl={post.imageUrl}
                   timestamp={post.timestamp}

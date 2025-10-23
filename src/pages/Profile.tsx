@@ -1,11 +1,15 @@
 import { useAuth } from "@/contexts/AuthContext";
 import Sidebar from "@/components/Sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const { user } = useAuth();
-  const userInitial = user?.email?.charAt(0).toUpperCase() || "U";
+  const { user, userProfile } = useAuth();
+  const navigate = useNavigate();
+  const userInitial = userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U";
 
   return (
     <div className="flex min-h-screen w-full">
@@ -13,22 +17,36 @@ const Profile = () => {
       
       <main className="flex-1 lg:ml-0 mt-14 lg:mt-0">
         <div className="max-w-2xl mx-auto">
-          <div className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border p-4">
+          <div className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border p-4 flex items-center justify-between">
             <h2 className="text-xl font-bold">Profile</h2>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate("/settings")}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
           </div>
 
           <div className="p-4">
             <Card className="p-6">
               <div className="flex items-start space-x-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    {userInitial}
-                  </AvatarFallback>
+                  {userProfile?.photoURL ? (
+                    <AvatarImage src={userProfile.photoURL} alt={userProfile.username} />
+                  ) : (
+                    <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                      {userInitial}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold">{user?.email?.split("@")[0]}</h3>
-                  <p className="text-muted-foreground">@{user?.email?.split("@")[0]}</p>
+                  <h3 className="text-xl font-bold">{userProfile?.displayName || user?.email?.split("@")[0]}</h3>
+                  <p className="text-muted-foreground">@{userProfile?.username || user?.email?.split("@")[0]}</p>
+                  {userProfile?.bio && (
+                    <p className="text-sm mt-2">{userProfile.bio}</p>
+                  )}
                   <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
                 </div>
               </div>

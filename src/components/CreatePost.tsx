@@ -13,7 +13,7 @@ const CreatePost = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [posting, setPosting] = useState(false);
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { toast } = useToast();
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,9 +63,13 @@ const CreatePost = () => {
     setPosting(true);
     try {
       const postsRef = ref(database, "posts");
+      
       await push(postsRef, {
         userId: user?.uid,
         userEmail: user?.email,
+        username: userProfile?.username || user?.email?.split("@")[0],
+        displayName: userProfile?.displayName || user?.email?.split("@")[0],
+        photoURL: userProfile?.photoURL || "",
         content,
         imageUrl: imageUrl || null,
         timestamp: serverTimestamp(),
@@ -84,6 +88,7 @@ const CreatePost = () => {
         description: "Failed to create post. Please try again.",
         variant: "destructive",
       });
+      console.error("Post error:", error);
     } finally {
       setPosting(false);
     }
