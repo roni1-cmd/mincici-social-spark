@@ -1,0 +1,158 @@
+import { useState } from "react";
+import { Image, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { ref, push, serverTimestamp } from "firebase/database";
+import { database } from "@/lib/firebase";
+
+const CreatePost = () => {
+  const [content, setContent] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [posting, setPosting] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "foxncici");
+
+    try {
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/dwnzxkata/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      setImageUrl(data.secure_url);
+      toast({
+        title: "Image uploaded!",
+        description: "Your image has been uploaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePost = async () => {
+    if (!content.trim() && !imageUrl) {
+      toast({
+        title: "Empty post",
+        description: "Please add some content or an image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPosting(true);
+    try {
+      const postsRef = ref(database, "posts");
+      await push(postsRef, {
+        userId: user?.uid,
+        userEmail: user?.email,
+        content,
+        imageUrl: imageUrl || null,
+        timestamp: serverTimestamp(),
+        likes: 0,
+      });
+
+      setContent("");
+      setImageUrl("");
+      toast({
+        title: "Posted!",
+        description: "Your post has been shared.",
+      });
+    } catch (error) {
+      toast({
+        title: "Post failed",
+        description: "Failed to create post. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  return (
+    <Card className="p-4 mb-6">
+      <div className="space-y-4">
+        <Textarea
+          placeholder="What's happening?"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="min-h-24 resize-none border-0 focus-visible:ring-0 text-base"
+        />
+
+        {imageUrl && (
+          <div className="relative">
+            <img
+              src={imageUrl}
+              alt="Upload preview"
+              className="w-full rounded-lg max-h-96 object-cover"
+            />
+            <Button
+              variant="destructive"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={() => setImageUrl("")}
+            >
+              Remove
+            </Button>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between border-t border-border pt-3">
+          <div className="flex items-center space-x-2">
+            <label htmlFor="image-upload">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary"
+                disabled={uploading}
+                asChild
+              >
+                <span>
+                  <Image className="h-5 w-5" />
+                </span>
+              </Button>
+            </label>
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+          </div>
+
+          <Button
+            onClick={handlePost}
+            disabled={posting || uploading || (!content.trim() && !imageUrl)}
+            className="rounded-full"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Post
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+export default CreatePost;
