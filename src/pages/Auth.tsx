@@ -54,10 +54,10 @@ const Auth = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center space-y-2">
             <h1 className="text-6xl font-serif font-light tracking-tight">
-              Constellation?
+              For me.
             </h1>
             <h2 className="text-6xl font-serif font-light tracking-tight">
-              Yours to command.
+              And for you.
             </h2>
             <p className="text-muted-foreground mt-6">
                Αλεπού και Σίσυ﻿
