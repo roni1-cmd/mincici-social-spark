@@ -18,6 +18,8 @@ interface UserProfile {
   bio: string;
   photoURL: string;
   createdAt: number;
+  isPrivate?: boolean;
+  showActivity?: boolean;
 }
 
 interface AuthContextType {

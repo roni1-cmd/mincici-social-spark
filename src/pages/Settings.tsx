@@ -28,8 +28,8 @@ const Settings = () => {
 
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
-  const [privateAccount, setPrivateAccount] = useState(false);
-  const [showActivity, setShowActivity] = useState(true);
+  const [privateAccount, setPrivateAccount] = useState(userProfile?.isPrivate || false);
+  const [showActivity, setShowActivity] = useState(userProfile?.showActivity !== false);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -303,7 +303,10 @@ const Settings = () => {
                       </div>
                       <Switch
                         checked={privateAccount}
-                        onCheckedChange={setPrivateAccount}
+                        onCheckedChange={async (checked) => {
+                          setPrivateAccount(checked);
+                          await updateUserProfile({ isPrivate: checked });
+                        }}
                       />
                     </div>
 
@@ -318,7 +321,10 @@ const Settings = () => {
                       </div>
                       <Switch
                         checked={showActivity}
-                        onCheckedChange={setShowActivity}
+                        onCheckedChange={async (checked) => {
+                          setShowActivity(checked);
+                          await updateUserProfile({ showActivity: checked });
+                        }}
                       />
                     </div>
 

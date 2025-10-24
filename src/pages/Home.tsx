@@ -17,6 +17,8 @@ interface Post {
   imageUrl?: string;
   timestamp: string;
   likes: number;
+  likedBy?: string[];
+  commentsCount?: number;
 }
 
 const Home = () => {
@@ -68,6 +70,8 @@ const Home = () => {
               posts.map((post) => (
                 <PostCard
                   key={post.id}
+                  postId={post.id}
+                  userId={post.userId}
                   userEmail={post.userEmail}
                   username={post.username}
                   displayName={post.displayName}
@@ -76,6 +80,8 @@ const Home = () => {
                   imageUrl={post.imageUrl}
                   timestamp={post.timestamp}
                   likes={post.likes}
+                  likedBy={post.likedBy}
+                  commentsCount={post.commentsCount}
                 />
               ))
             )}

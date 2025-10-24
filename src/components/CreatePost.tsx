@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, Send } from "lucide-react";
+import { Image, Send, FileText, Video, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -74,6 +74,8 @@ const CreatePost = () => {
         imageUrl: imageUrl || null,
         timestamp: serverTimestamp(),
         likes: 0,
+        likedBy: [],
+        commentsCount: 0,
       });
 
       setContent("");
@@ -123,12 +125,12 @@ const CreatePost = () => {
         )}
 
         <div className="flex items-center justify-between border-t border-border pt-3">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <label htmlFor="image-upload">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-primary"
+                className="text-primary hover:bg-primary/10"
                 disabled={uploading}
                 asChild
               >
@@ -144,6 +146,36 @@ const CreatePost = () => {
               className="hidden"
               onChange={handleImageUpload}
             />
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary hover:bg-primary/10"
+              disabled
+              title="Coming soon"
+            >
+              <Video className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary hover:bg-primary/10"
+              disabled
+              title="Coming soon"
+            >
+              <FileText className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary hover:bg-primary/10"
+              disabled
+              title="Coming soon"
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
           </div>
 
           <Button
