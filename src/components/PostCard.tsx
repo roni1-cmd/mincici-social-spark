@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2 } from "luci
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +46,7 @@ interface PostCardProps {
 const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, content, imageUrl, timestamp, likes, likedBy = [], commentsCount = 0 }: PostCardProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(likedBy.includes(user?.uid || ""));
   const [likeCount, setLikeCount] = useState(likes);
   const [showFullContent, setShowFullContent] = useState(false);
@@ -147,7 +149,10 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
     <>
       <Card className="p-4 mb-4 hover:bg-muted/50 transition-colors">
         <div className="flex items-start space-x-3">
-          <Avatar className="h-10 w-10">
+          <Avatar 
+            className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={() => navigate(`/profile/${userId}`)}
+          >
             {photoURL ? (
               <AvatarImage src={photoURL} alt={name} />
             ) : (
@@ -160,8 +165,18 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className="font-semibold text-sm">{name}</span>
-                <span className="text-muted-foreground text-sm">@{handle}</span>
+                <span 
+                  className="font-semibold text-sm cursor-pointer hover:underline"
+                  onClick={() => navigate(`/profile/${userId}`)}
+                >
+                  {name}
+                </span>
+                <span 
+                  className="text-muted-foreground text-sm cursor-pointer hover:underline"
+                  onClick={() => navigate(`/profile/${userId}`)}
+                >
+                  @{handle}
+                </span>
                 <span className="text-muted-foreground text-sm">·</span>
                 <span className="text-muted-foreground text-sm">{formatTime(timestamp)}</span>
               </div>

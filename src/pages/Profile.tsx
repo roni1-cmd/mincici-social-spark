@@ -5,12 +5,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Lock, Globe } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Settings, Lock, Globe, UserPlus, UserMinus } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import PostCard from "@/components/PostCard";
 import { FeedSkeleton } from "@/components/LoadingSkeleton";
-import { ref, onValue, query, orderByChild, equalTo } from "firebase/database";
+import CreatePost from "@/components/CreatePost";
+import { ref, onValue, query, orderByChild, equalTo, get, update, push } from "firebase/database";
 import { database } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface Post {
   id: string;
@@ -28,22 +30,46 @@ interface Post {
 }
 
 const Profile = () => {
+  const { userId } = useParams();
   const { user, userProfile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const userInitial = userProfile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U";
+  const [profileData, setProfileData] = useState<any>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  
+  const isOwnProfile = !userId || userId === user?.uid;
+  const displayProfile = isOwnProfile ? userProfile : profileData;
+  
+  const userInitial = displayProfile?.username?.charAt(0).toUpperCase() || displayProfile?.email?.charAt(0).toUpperCase() || "U";
 
-  // Get privacy settings from userProfile (you'll need to add these to the Settings page state management)
-  const isPrivate = userProfile?.isPrivate || false;
-  const showActivityStatus = userProfile?.showActivity !== false;
-  const isOnline = showActivityStatus; // In a real app, you'd track this with presence
+  const isPrivate = displayProfile?.isPrivate || false;
+  const showActivityStatus = displayProfile?.showActivity !== false;
+  const isOnline = showActivityStatus;
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId || userId === user?.uid) return;
+
+    const fetchProfileData = async () => {
+      const profileRef = ref(database, `users/${userId}`);
+      const snapshot = await get(profileRef);
+      if (snapshot.exists()) {
+        setProfileData(snapshot.val());
+      }
+    };
+
+    fetchProfileData();
+  }, [userId, user]);
+
+  useEffect(() => {
+    const targetUserId = userId || user?.uid;
+    if (!targetUserId) return;
 
     const postsRef = ref(database, "posts");
-    const userPostsQuery = query(postsRef, orderByChild("userId"), equalTo(user.uid));
+    const userPostsQuery = query(postsRef, orderByChild("userId"), equalTo(targetUserId));
 
     const unsubscribe = onValue(userPostsQuery, (snapshot) => {
       const data = snapshot.val();
@@ -52,7 +78,6 @@ const Profile = () => {
           id,
           ...post,
         }));
-        // Sort by timestamp descending
         postsArray.sort((a, b) => {
           const timeA = new Date(a.timestamp).getTime();
           const timeB = new Date(b.timestamp).getTime();
@@ -66,7 +91,73 @@ const Profile = () => {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, userId]);
+
+  useEffect(() => {
+    if (!user || isOwnProfile) return;
+    
+    const targetUserId = userId || user.uid;
+    const followRef = ref(database, `followers/${targetUserId}/${user.uid}`);
+    
+    const unsubscribe = onValue(followRef, (snapshot) => {
+      setIsFollowing(snapshot.exists());
+    });
+    
+    return () => unsubscribe();
+  }, [user, userId, isOwnProfile]);
+
+  useEffect(() => {
+    const targetUserId = userId || user?.uid;
+    if (!targetUserId) return;
+
+    const followersRef = ref(database, `followers/${targetUserId}`);
+    const followingRef = ref(database, `following/${targetUserId}`);
+
+    const unsubFollowers = onValue(followersRef, (snapshot) => {
+      setFollowersCount(snapshot.exists() ? Object.keys(snapshot.val()).length : 0);
+    });
+
+    const unsubFollowing = onValue(followingRef, (snapshot) => {
+      setFollowingCount(snapshot.exists() ? Object.keys(snapshot.val()).length : 0);
+    });
+
+    return () => {
+      unsubFollowers();
+      unsubFollowing();
+    };
+  }, [user, userId]);
+
+  const handleFollow = async () => {
+    if (!user || !userId) return;
+
+    try {
+      if (isFollowing) {
+        await update(ref(database), {
+          [`followers/${userId}/${user.uid}`]: null,
+          [`following/${user.uid}/${userId}`]: null,
+        });
+        toast({
+          title: "Unfollowed",
+          description: "You are no longer following this user.",
+        });
+      } else {
+        await update(ref(database), {
+          [`followers/${userId}/${user.uid}`]: true,
+          [`following/${user.uid}/${userId}`]: true,
+        });
+        toast({
+          title: "Following",
+          description: "You are now following this user.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update follow status.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full">
@@ -90,8 +181,8 @@ const Profile = () => {
               <div className="flex items-start space-x-4">
                 <div className="relative">
                   <Avatar className="h-20 w-20">
-                    {userProfile?.photoURL ? (
-                      <AvatarImage src={userProfile.photoURL} alt={userProfile.username} />
+                    {displayProfile?.photoURL ? (
+                      <AvatarImage src={displayProfile.photoURL} alt={displayProfile.username} />
                     ) : (
                       <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                         {userInitial}
@@ -104,25 +195,47 @@ const Profile = () => {
                 </div>
                 
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold">{userProfile?.displayName || user?.email?.split("@")[0]}</h3>
-                    {isPrivate ? (
-                      <Badge variant="secondary" className="gap-1">
-                        <Lock className="h-3 w-3" />
-                        Private
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="gap-1">
-                        <Globe className="h-3 w-3" />
-                        Public
-                      </Badge>
+                  <div className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold">{displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}</h3>
+                      {isPrivate ? (
+                        <Badge variant="secondary" className="gap-1">
+                          <Lock className="h-3 w-3" />
+                          Private
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="gap-1">
+                          <Globe className="h-3 w-3" />
+                          Public
+                        </Badge>
+                      )}
+                    </div>
+                    {!isOwnProfile && (
+                      <Button
+                        variant={isFollowing ? "outline" : "default"}
+                        size="sm"
+                        onClick={handleFollow}
+                        className="gap-2"
+                      >
+                        {isFollowing ? (
+                          <>
+                            <UserMinus className="h-4 w-4" />
+                            Unfollow
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4" />
+                            Follow
+                          </>
+                        )}
+                      </Button>
                     )}
                   </div>
-                  <p className="text-muted-foreground">@{userProfile?.username || user?.email?.split("@")[0]}</p>
-                  {userProfile?.bio && (
-                    <p className="text-sm mt-2">{userProfile.bio}</p>
+                  <p className="text-muted-foreground">@{displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}</p>
+                  {displayProfile?.bio && (
+                    <p className="text-sm mt-2">{displayProfile.bio}</p>
                   )}
-                  <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
+                  {isOwnProfile && <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>}
                 </div>
               </div>
 
@@ -131,19 +244,25 @@ const Profile = () => {
                   <div className="text-2xl font-bold">{posts.length}</div>
                   <div className="text-sm text-muted-foreground">Posts</div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold">0</div>
+                <div className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors">
+                  <div className="text-2xl font-bold">{!isPrivate || isOwnProfile ? followersCount : "•"}</div>
                   <div className="text-sm text-muted-foreground">Followers</div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold">0</div>
+                <div className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors">
+                  <div className="text-2xl font-bold">{!isPrivate || isOwnProfile ? followingCount : "•"}</div>
                   <div className="text-sm text-muted-foreground">Following</div>
                 </div>
               </div>
             </Card>
 
+            {isOwnProfile && (
+              <div className="mt-6">
+                <CreatePost />
+              </div>
+            )}
+
             <div className="mt-6">
-              <h3 className="font-bold text-lg mb-4">Your Posts</h3>
+              <h3 className="font-bold text-lg mb-4">{isOwnProfile ? "Your Posts" : "Posts"}</h3>
               {loading ? (
                 <FeedSkeleton />
               ) : posts.length === 0 ? (

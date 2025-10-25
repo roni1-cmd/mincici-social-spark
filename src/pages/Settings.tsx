@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Loader2 } from "lucide-react";
-import { ref, set } from "firebase/database";
+import { ref, set, onValue, update } from "firebase/database";
 import { database } from "@/lib/firebase";
 
 const Settings = () => {
@@ -49,11 +49,37 @@ const Settings = () => {
         }
       );
       const data = await response.json();
-      setPhotoURL(data.secure_url);
-      await updateUserProfile({ photoURL: data.secure_url });
+      const newPhotoURL = data.secure_url;
+      setPhotoURL(newPhotoURL);
+      
+      // Update user profile
+      await updateUserProfile({ photoURL: newPhotoURL });
+      
+      // Update all existing posts with new photo URL
+      if (user) {
+        const postsRef = ref(database, "posts");
+        const snapshot = await new Promise<any>((resolve) => {
+          onValue(postsRef, resolve, { onlyOnce: true });
+        });
+        
+        const posts = snapshot.val();
+        if (posts) {
+          const updates: Record<string, any> = {};
+          Object.keys(posts).forEach((postId) => {
+            if (posts[postId].userId === user.uid) {
+              updates[`posts/${postId}/photoURL`] = newPhotoURL;
+            }
+          });
+          
+          if (Object.keys(updates).length > 0) {
+            await update(ref(database), updates);
+          }
+        }
+      }
+      
       toast({
         title: "Profile picture updated!",
-        description: "Your profile picture has been changed.",
+        description: "Your profile picture has been updated everywhere.",
       });
     } catch (error) {
       toast({

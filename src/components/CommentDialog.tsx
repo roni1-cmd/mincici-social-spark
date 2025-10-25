@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { ref, push, onValue, query, orderByChild } from "firebase/database";
+import { ref, push, onValue, query, orderByChild, update } from "firebase/database";
 import { database } from "@/lib/firebase";
 import { Send } from "lucide-react";
 
@@ -69,6 +69,12 @@ const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
         timestamp: new Date().toISOString(),
       });
 
+      // Update comment count on the post
+      const postRef = ref(database, `posts/${postId}`);
+      await update(postRef, {
+        commentsCount: comments.length + 1,
+      });
+
       setContent("");
       toast({
         title: "Comment posted!",
@@ -87,7 +93,7 @@ const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-full max-h-[95vh] h-[95vh] w-[95vw] flex flex-col rounded-2xl">
         <DialogHeader>
           <DialogTitle>Comments</DialogTitle>
         </DialogHeader>
