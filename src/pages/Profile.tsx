@@ -14,7 +14,6 @@ import { ref, onValue, query, orderByChild, equalTo, get, update, push } from "f
 import { database } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import FollowersDialog from "@/components/FollowersDialog";
-import { supabase, RELATIONSHIP_STATUS_LABELS, RelationshipStatusType } from "@/lib/supabase";
 
 interface Post {
   id: string;
@@ -44,7 +43,6 @@ const Profile = () => {
   const [followingCount, setFollowingCount] = useState(0);
   const [followersDialogOpen, setFollowersDialogOpen] = useState(false);
   const [followersDialogTab, setFollowersDialogTab] = useState<"followers" | "following">("followers");
-  const [relationshipStatus, setRelationshipStatus] = useState<any>(null);
   const [relationshipPartner, setRelationshipPartner] = useState<any>(null);
   
   const isOwnProfile = !userId || userId === user?.uid;
@@ -137,55 +135,26 @@ const Profile = () => {
     const targetUserId = userId || user?.uid;
     if (!targetUserId) return;
 
-    const fetchRelationshipStatus = async () => {
-      const { data: statusData } = await supabase
-        .from('relationship_statuses')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .maybeSingle();
-
-      if (statusData && statusData.partner_accepted) {
-        setRelationshipStatus(statusData);
-
-        if (statusData.partner_id) {
-          const partnerRef = ref(database, `users/${statusData.partner_id}`);
+    const profileRef = ref(database, `users/${targetUserId}`);
+    const unsubProfile = onValue(profileRef, async (snapshot) => {
+      if (snapshot.exists()) {
+        const profile = snapshot.val();
+        if (profile.relationshipWith) {
+          const partnerRef = ref(database, `users/${profile.relationshipWith}`);
           const partnerSnapshot = await get(partnerRef);
           if (partnerSnapshot.exists()) {
             setRelationshipPartner({
-              uid: statusData.partner_id,
+              uid: profile.relationshipWith,
               ...partnerSnapshot.val(),
             });
           }
         } else {
           setRelationshipPartner(null);
         }
-      } else {
-        setRelationshipStatus(null);
-        setRelationshipPartner(null);
       }
-    };
+    });
 
-    fetchRelationshipStatus();
-
-    const subscription = supabase
-      .channel('relationship_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'relationship_statuses',
-          filter: `user_id=eq.${targetUserId}`
-        },
-        () => {
-          fetchRelationshipStatus();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => unsubProfile();
   }, [user, userId]);
 
   const handleFollow = async () => {
@@ -331,30 +300,26 @@ const Profile = () => {
                 </div>
               </div>
 
-              {relationshipStatus && (
-                <div className="mt-4 p-3 rounded-lg bg-muted">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Heart className="h-4 w-4 text-red-500 fill-red-500" />
-                      <span className="text-sm">{RELATIONSHIP_STATUS_LABELS[relationshipStatus.status_type as RelationshipStatusType]}</span>
-                    </div>
-                    {relationshipPartner && (
-                      <div
-                        className="flex items-center gap-2 cursor-pointer hover:opacity-80"
-                        onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
-                      >
-                        <Avatar className="h-6 w-6">
-                          {relationshipPartner.photoURL ? (
-                            <AvatarImage src={relationshipPartner.photoURL} alt={relationshipPartner.username} />
-                          ) : (
-                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                              {relationshipPartner.username?.charAt(0).toUpperCase() || "U"}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                        <span className="text-sm font-semibold">{relationshipPartner.displayName}</span>
-                      </div>
-                    )}
+              {relationshipPartner && (
+                <div className="mt-4 p-3 rounded-lg bg-muted flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                    <span className="text-sm">In a relationship with</span>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                    onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
+                  >
+                    <Avatar className="h-6 w-6">
+                      {relationshipPartner.photoURL ? (
+                        <AvatarImage src={relationshipPartner.photoURL} alt={relationshipPartner.username} />
+                      ) : (
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {relationshipPartner.username?.charAt(0).toUpperCase() || "U"}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <span className="text-sm font-semibold">{relationshipPartner.displayName}</span>
                   </div>
                 </div>
               )}
