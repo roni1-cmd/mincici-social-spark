@@ -11,9 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, Heart } from "lucide-react";
 import { ref, set, onValue, update } from "firebase/database";
 import { database } from "@/lib/firebase";
+import RelationshipDialog from "@/components/RelationshipDialog";
 
 const Settings = () => {
   const { user, userProfile, updateUserProfile, checkUsernameAvailable } = useAuth();
@@ -30,6 +31,7 @@ const Settings = () => {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [privateAccount, setPrivateAccount] = useState(userProfile?.isPrivate || false);
   const [showActivity, setShowActivity] = useState(userProfile?.showActivity !== false);
+  const [relationshipDialogOpen, setRelationshipDialogOpen] = useState(false);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -270,6 +272,23 @@ const Settings = () => {
                       </p>
                     </div>
 
+                    <Separator />
+
+                    <div className="space-y-2">
+                      <Label>Relationship Status</Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Set your relationship status with a mutual follower
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => setRelationshipDialogOpen(true)}
+                        className="gap-2"
+                      >
+                        <Heart className="h-4 w-4" />
+                        Manage Relationship
+                      </Button>
+                    </div>
+
                     <Button onClick={handleSaveProfile} disabled={saving}>
                       {saving ? "Saving..." : "Save Changes"}
                     </Button>
@@ -430,6 +449,11 @@ const Settings = () => {
           </div>
         </div>
       </main>
+
+      <RelationshipDialog
+        isOpen={relationshipDialogOpen}
+        onClose={() => setRelationshipDialogOpen(false)}
+      />
     </div>
   );
 };

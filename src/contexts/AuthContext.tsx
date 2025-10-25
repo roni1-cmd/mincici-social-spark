@@ -20,6 +20,7 @@ interface UserProfile {
   createdAt: number;
   isPrivate?: boolean;
   showActivity?: boolean;
+  relationshipWith?: string;
 }
 
 interface AuthContextType {

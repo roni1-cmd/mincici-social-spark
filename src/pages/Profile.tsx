@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Lock, Globe, UserPlus, UserMinus } from "lucide-react";
+import { Settings, Lock, Globe, UserPlus, UserMinus, Heart } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import PostCard from "@/components/PostCard";
 import { FeedSkeleton } from "@/components/LoadingSkeleton";
@@ -13,6 +13,7 @@ import CreatePost from "@/components/CreatePost";
 import { ref, onValue, query, orderByChild, equalTo, get, update, push } from "firebase/database";
 import { database } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import FollowersDialog from "@/components/FollowersDialog";
 
 interface Post {
   id: string;
@@ -40,6 +41,9 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [followersDialogOpen, setFollowersDialogOpen] = useState(false);
+  const [followersDialogTab, setFollowersDialogTab] = useState<"followers" | "following">("followers");
+  const [relationshipPartner, setRelationshipPartner] = useState<any>(null);
   
   const isOwnProfile = !userId || userId === user?.uid;
   const displayProfile = isOwnProfile ? userProfile : profileData;
@@ -125,6 +129,32 @@ const Profile = () => {
       unsubFollowers();
       unsubFollowing();
     };
+  }, [user, userId]);
+
+  useEffect(() => {
+    const targetUserId = userId || user?.uid;
+    if (!targetUserId) return;
+
+    const profileRef = ref(database, `users/${targetUserId}`);
+    const unsubProfile = onValue(profileRef, async (snapshot) => {
+      if (snapshot.exists()) {
+        const profile = snapshot.val();
+        if (profile.relationshipWith) {
+          const partnerRef = ref(database, `users/${profile.relationshipWith}`);
+          const partnerSnapshot = await get(partnerRef);
+          if (partnerSnapshot.exists()) {
+            setRelationshipPartner({
+              uid: profile.relationshipWith,
+              ...partnerSnapshot.val(),
+            });
+          }
+        } else {
+          setRelationshipPartner(null);
+        }
+      }
+    });
+
+    return () => unsubProfile();
   }, [user, userId]);
 
   const handleFollow = async () => {
@@ -239,20 +269,60 @@ const Profile = () => {
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-3 gap-4 text-center">
+              <div className="mt-6 flex items-center justify-around text-center">
                 <div>
-                  <div className="text-2xl font-bold">{posts.length}</div>
-                  <div className="text-sm text-muted-foreground">Posts</div>
+                  <div className="text-xl font-bold">{posts.length}</div>
+                  <div className="text-xs text-muted-foreground">Posts</div>
                 </div>
-                <div className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors">
-                  <div className="text-2xl font-bold">{!isPrivate || isOwnProfile ? followersCount : "•"}</div>
-                  <div className="text-sm text-muted-foreground">Followers</div>
+                <div
+                  className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors"
+                  onClick={() => {
+                    if (!isPrivate || isOwnProfile) {
+                      setFollowersDialogTab("followers");
+                      setFollowersDialogOpen(true);
+                    }
+                  }}
+                >
+                  <div className="text-xl font-bold">{!isPrivate || isOwnProfile ? followersCount : "•"}</div>
+                  <div className="text-xs text-muted-foreground">Followers</div>
                 </div>
-                <div className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors">
-                  <div className="text-2xl font-bold">{!isPrivate || isOwnProfile ? followingCount : "•"}</div>
-                  <div className="text-sm text-muted-foreground">Following</div>
+                <div
+                  className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors"
+                  onClick={() => {
+                    if (!isPrivate || isOwnProfile) {
+                      setFollowersDialogTab("following");
+                      setFollowersDialogOpen(true);
+                    }
+                  }}
+                >
+                  <div className="text-xl font-bold">{!isPrivate || isOwnProfile ? followingCount : "•"}</div>
+                  <div className="text-xs text-muted-foreground">Following</div>
                 </div>
               </div>
+
+              {relationshipPartner && (
+                <div className="mt-4 p-3 rounded-lg bg-muted flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                    <span className="text-sm">In a relationship with</span>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                    onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
+                  >
+                    <Avatar className="h-6 w-6">
+                      {relationshipPartner.photoURL ? (
+                        <AvatarImage src={relationshipPartner.photoURL} alt={relationshipPartner.username} />
+                      ) : (
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {relationshipPartner.username?.charAt(0).toUpperCase() || "U"}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <span className="text-sm font-semibold">{relationshipPartner.displayName}</span>
+                  </div>
+                </div>
+              )}
             </Card>
 
             {isOwnProfile && (
@@ -292,6 +362,13 @@ const Profile = () => {
           </div>
         </div>
       </main>
+
+      <FollowersDialog
+        userId={userId || user?.uid || ""}
+        isOpen={followersDialogOpen}
+        onClose={() => setFollowersDialogOpen(false)}
+        defaultTab={followersDialogTab}
+      />
     </div>
   );
 };
