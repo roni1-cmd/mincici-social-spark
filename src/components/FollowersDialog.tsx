@@ -88,7 +88,7 @@ const FollowersDialog = ({ userId, isOpen, onClose, defaultTab = "followers" }: 
             className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
             onClick={() => handleUserClick(user.uid)}
           >
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-10 w-10 flex-shrink-0">
               {user.photoURL ? (
                 <AvatarImage src={user.photoURL} alt={user.username} />
               ) : (
@@ -97,9 +97,9 @@ const FollowersDialog = ({ userId, isOpen, onClose, defaultTab = "followers" }: 
                 </AvatarFallback>
               )}
             </Avatar>
-            <div>
-              <p className="font-semibold text-sm">{user.displayName}</p>
-              <p className="text-muted-foreground text-xs">@{user.username}</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-sm truncate" title={user.displayName}>{user.displayName}</p>
+              <p className="text-muted-foreground text-xs truncate" title={`@${user.username}`}>@{user.username}</p>
             </div>
           </div>
         ))

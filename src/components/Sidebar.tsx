@@ -48,7 +48,7 @@ const Sidebar = () => {
             <span className="text-lg">{item.label}</span>
           </NavLink>
         ))}
-        <div className="px-4 py-3">
+        <div className="flex items-center space-x-4 px-4 py-3 rounded-full transition-colors text-foreground hover:bg-muted">
           <NotificationPanel />
         </div>
       </nav>
