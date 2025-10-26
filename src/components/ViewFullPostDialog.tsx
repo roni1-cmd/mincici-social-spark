@@ -150,7 +150,7 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 cursor-pointer" onClick={() => navigate(`/profile/${post.userId}`)}>
+            <Avatar className="h-12 w-12 flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${post.userId}`)}>
               {post.photoURL ? (
                 <AvatarImage src={post.photoURL} alt={post.username} />
               ) : (
@@ -159,11 +159,11 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
                 </AvatarFallback>
               )}
             </Avatar>
-            <div>
-              <p className="font-semibold cursor-pointer hover:underline" onClick={() => navigate(`/profile/${post.userId}`)}>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold cursor-pointer hover:underline truncate" onClick={() => navigate(`/profile/${post.userId}`)} title={post.displayName || post.username}>
                 {post.displayName || post.username}
               </p>
-              <p className="text-sm text-muted-foreground">@{post.username}</p>
+              <p className="text-sm text-muted-foreground truncate" title={`@${post.username}`}>@{post.username}</p>
             </div>
           </div>
         </DialogHeader>
@@ -227,7 +227,7 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
               ) : (
                 comments.map((comment) => (
                   <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8 cursor-pointer" onClick={() => navigate(`/profile/${comment.userId}`)}>
+                    <Avatar className="h-8 w-8 flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${comment.userId}`)}>
                       {comment.photoURL ? (
                         <AvatarImage src={comment.photoURL} alt={comment.username} />
                       ) : (
@@ -236,14 +236,14 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <div className="flex-1 bg-muted rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-sm cursor-pointer hover:underline" onClick={() => navigate(`/profile/${comment.userId}`)}>
+                    <div className="flex-1 min-w-0 bg-muted rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <p className="font-semibold text-sm cursor-pointer hover:underline truncate max-w-[150px] sm:max-w-[200px]" onClick={() => navigate(`/profile/${comment.userId}`)} title={comment.displayName}>
                           {comment.displayName}
                         </p>
-                        <span className="text-xs text-muted-foreground">{formatTime(comment.timestamp)}</span>
+                        <span className="text-xs text-muted-foreground flex-shrink-0">{formatTime(comment.timestamp)}</span>
                       </div>
-                      <p className="text-sm">{comment.content}</p>
+                      <p className="text-sm break-words">{comment.content}</p>
                     </div>
                   </div>
                 ))
