@@ -1,9 +1,10 @@
-import { Home, Search, Bell, Mail, User, LogOut, Menu, Settings } from "lucide-react";
+import { Home, Search, Mail, User, LogOut, Menu, Settings } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
+import NotificationPanel from "./NotificationPanel";
 
 const Sidebar = () => {
   const { user, signOut } = useAuth();
@@ -18,7 +19,6 @@ const Sidebar = () => {
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Search, label: "Explore", path: "/explore" },
-    { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: Mail, label: "Messages", path: "/messages" },
     { icon: User, label: "Profile", path: "/profile" },
     { icon: Settings, label: "Settings", path: "/settings" },
@@ -48,6 +48,9 @@ const Sidebar = () => {
             <span className="text-lg">{item.label}</span>
           </NavLink>
         ))}
+        <div className="px-4 py-3">
+          <NotificationPanel />
+        </div>
       </nav>
 
       {user && (

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { ref, push, onValue, query, orderByChild, update, remove } from "firebase/database";
+import { ref, push, onValue, query, orderByChild, update, remove, get } from "firebase/database";
 import { database } from "@/lib/firebase";
 import { Send, MoreVertical, Pencil, Trash2, Reply } from "lucide-react";
 import {
@@ -92,6 +92,21 @@ const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
       await update(postRef, {
         commentsCount: comments.length + 1,
       });
+      
+      const postSnapshot = await get(postRef);
+      if (postSnapshot.exists() && postSnapshot.val().userId !== user?.uid) {
+        const notificationRef = push(ref(database, `notifications/${postSnapshot.val().userId}`));
+        await update(notificationRef, {
+          type: "comment",
+          fromUserId: user?.uid,
+          fromUsername: userProfile?.username || "",
+          fromDisplayName: userProfile?.displayName || "",
+          fromPhotoURL: userProfile?.photoURL || "",
+          postId: postId,
+          timestamp: Date.now(),
+          read: false,
+        });
+      }
 
       setContent("");
       setReplyTo(null);

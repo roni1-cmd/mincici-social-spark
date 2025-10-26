@@ -162,10 +162,51 @@ const Profile = () => {
 
     try {
       if (isFollowing) {
-        await update(ref(database), {
+        const postsSnapshot = await get(query(ref(database, "posts"), orderByChild("userId"), equalTo(userId)));
+        const commentsSnapshot = await get(ref(database, "comments"));
+        const notificationsSnapshot = await get(ref(database, `notifications/${user.uid}`));
+        
+        const updates: any = {
           [`followers/${userId}/${user.uid}`]: null,
           [`following/${user.uid}/${userId}`]: null,
-        });
+        };
+        
+        if (postsSnapshot.exists()) {
+          Object.entries(postsSnapshot.val()).forEach(([postId, post]: [string, any]) => {
+            const likedBy = post.likedBy || [];
+            const reactions = post.reactions || {};
+            if (likedBy.includes(user.uid)) {
+              const newLikedBy = likedBy.filter((id: string) => id !== user.uid);
+              updates[`posts/${postId}/likedBy`] = newLikedBy.length > 0 ? newLikedBy : null;
+              updates[`posts/${postId}/likes`] = newLikedBy.length;
+            }
+            if (reactions[user.uid]) {
+              delete reactions[user.uid];
+              updates[`posts/${postId}/reactions`] = Object.keys(reactions).length > 0 ? reactions : null;
+            }
+          });
+        }
+        
+        if (commentsSnapshot.exists()) {
+          Object.entries(commentsSnapshot.val()).forEach(([postId, comments]: [string, any]) => {
+            Object.entries(comments).forEach(([commentId, comment]: [string, any]) => {
+              if (comment.userId === user.uid) {
+                updates[`comments/${postId}/${commentId}`] = null;
+              }
+            });
+          });
+        }
+        
+        if (notificationsSnapshot.exists()) {
+          Object.entries(notificationsSnapshot.val()).forEach(([notifId, notif]: [string, any]) => {
+            if (notif.fromUserId === userId) {
+              updates[`notifications/${user.uid}/${notifId}`] = null;
+            }
+          });
+        }
+        
+        await update(ref(database), updates);
+        
         toast({
           title: "Unfollowed",
           description: "You are no longer following this user.",
@@ -175,6 +216,18 @@ const Profile = () => {
           [`followers/${userId}/${user.uid}`]: true,
           [`following/${user.uid}/${userId}`]: true,
         });
+        
+        const notificationRef = push(ref(database, `notifications/${userId}`));
+        await update(notificationRef, {
+          type: "follow",
+          fromUserId: user.uid,
+          fromUsername: userProfile?.username || "",
+          fromDisplayName: userProfile?.displayName || "",
+          fromPhotoURL: userProfile?.photoURL || "",
+          timestamp: Date.now(),
+          read: false,
+        });
+        
         toast({
           title: "Following",
           description: "You are now following this user.",
@@ -301,16 +354,21 @@ const Profile = () => {
               </div>
 
               {relationshipPartner && (
-                <div className="mt-4 p-3 rounded-lg bg-muted flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="mt-4 p-3 rounded-lg bg-muted flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Heart className="h-4 w-4 text-red-500 fill-red-500" />
-                    <span className="text-sm">In a relationship with</span>
+                    <span className="text-sm whitespace-nowrap">
+                      {displayProfile?.relationshipStatus === "engaged" ? "Engaged to" : 
+                       displayProfile?.relationshipStatus === "married" ? "Married to" : 
+                       displayProfile?.relationshipStatus === "civil_partnership" ? "In a civil partnership with" : 
+                       "In a relationship with"}
+                    </span>
                   </div>
                   <div
-                    className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 min-w-0"
                     onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
                   >
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="h-6 w-6 flex-shrink-0">
                       {relationshipPartner.photoURL ? (
                         <AvatarImage src={relationshipPartner.photoURL} alt={relationshipPartner.username} />
                       ) : (
@@ -319,8 +377,22 @@ const Profile = () => {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <span className="text-sm font-semibold">{relationshipPartner.displayName}</span>
+                    <span className="text-sm font-semibold truncate">{relationshipPartner.displayName}</span>
                   </div>
+                </div>
+              )}
+              
+              {displayProfile?.relationshipStatus === "single" && (
+                <div className="mt-4 p-3 rounded-lg bg-muted flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  <span className="text-sm">Single</span>
+                </div>
+              )}
+              
+              {displayProfile?.relationshipStatus === "widowed" && (
+                <div className="mt-4 p-3 rounded-lg bg-muted flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  <span className="text-sm">Widowed</span>
                 </div>
               )}
             </Card>

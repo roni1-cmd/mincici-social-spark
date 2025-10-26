@@ -21,6 +21,7 @@ interface UserProfile {
   isPrivate?: boolean;
   showActivity?: boolean;
   relationshipWith?: string;
+  relationshipStatus?: string;
 }
 
 interface AuthContextType {

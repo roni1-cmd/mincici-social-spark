@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2, ThumbsUp, Laugh, Angry, Frown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,11 +22,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { ref, update, remove } from "firebase/database";
+import { ref, update, remove, push } from "firebase/database";
 import { database } from "@/lib/firebase";
 import ImageLightbox from "./ImageLightbox";
 import EditPostDialog from "./EditPostDialog";
 import CommentDialog from "./CommentDialog";
+import ViewFullPostDialog from "./ViewFullPostDialog";
 
 interface PostCardProps {
   postId: string;
@@ -44,7 +45,7 @@ interface PostCardProps {
 }
 
 const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, content, imageUrl, timestamp, likes, likedBy = [], commentsCount = 0 }: PostCardProps) => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(likedBy.includes(user?.uid || ""));
@@ -54,6 +55,7 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
+  const [viewFullPostOpen, setViewFullPostOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   
   const isOwnPost = user?.uid === userId;
@@ -92,6 +94,20 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
         likes: newLikedBy.length,
         likedBy: newLikedBy,
       });
+      
+      if (newIsLiked && userId !== user.uid) {
+        const notificationRef = push(ref(database, `notifications/${userId}`));
+        await update(notificationRef, {
+          type: "like",
+          fromUserId: user.uid,
+          fromUsername: userProfile?.username || "",
+          fromDisplayName: userProfile?.displayName || "",
+          fromPhotoURL: userProfile?.photoURL || "",
+          postId: postId,
+          timestamp: Date.now(),
+          read: false,
+        });
+      }
     } catch (error) {
       setIsLiked(!newIsLiked);
       setLikeCount(likes);
@@ -225,34 +241,44 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
               />
             )}
 
-            <div className="flex items-center space-x-6 text-muted-foreground mt-3">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`space-x-2 p-0 h-auto ${
-                  isLiked ? "text-red-500" : "hover:text-red-500"
-                } ${isAnimating ? "animate-scale-in" : ""}`}
-                onClick={handleLike}
+            <div className="flex items-center justify-between mt-3 border-t pt-3">
+              <div className="flex items-center space-x-6 text-muted-foreground">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={`space-x-2 p-0 h-auto ${
+                    isLiked ? "text-red-500" : "hover:text-red-500"
+                  } ${isAnimating ? "animate-scale-in" : ""}`}
+                  onClick={handleLike}
+                >
+                  <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+                  <span className="text-xs">{likeCount}</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="space-x-2 hover:text-primary p-0 h-auto"
+                  onClick={() => setCommentDialogOpen(true)}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-xs">{commentsCount}</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="hover:text-primary p-0 h-auto"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button
+                variant="link"
+                size="sm"
+                className="text-xs text-primary"
+                onClick={() => setViewFullPostOpen(true)}
               >
-                <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-                <span className="text-xs">{likeCount}</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="space-x-2 hover:text-primary p-0 h-auto"
-                onClick={() => setCommentDialogOpen(true)}
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-xs">{commentsCount}</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="hover:text-primary p-0 h-auto"
-                onClick={handleShare}
-              >
-                <Share2 className="h-4 w-4" />
+                View full post
               </Button>
             </div>
           </div>
@@ -276,6 +302,12 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
         postId={postId}
         isOpen={commentDialogOpen}
         onClose={() => setCommentDialogOpen(false)}
+      />
+
+      <ViewFullPostDialog
+        postId={postId}
+        isOpen={viewFullPostOpen}
+        onClose={() => setViewFullPostOpen(false)}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
