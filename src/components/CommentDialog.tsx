@@ -206,10 +206,10 @@ const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
                   )}
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                      <span className="font-semibold text-sm truncate max-w-[120px] sm:max-w-[150px]" title={comment.displayName}>{comment.displayName}</span>
-                      <span className="text-muted-foreground text-xs truncate max-w-[100px] sm:max-w-[120px]" title={`@${comment.username}`}>@{comment.username}</span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-sm">{comment.displayName}</span>
+                      <span className="text-muted-foreground text-xs">@{comment.username}</span>
                     </div>
                     {comment.userId === user?.uid && (
                       <DropdownMenu>
@@ -235,7 +235,7 @@ const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
                     )}
                   </div>
                   {comment.replyToUsername && (
-                    <p className="text-xs text-muted-foreground mt-1 truncate" title={`Replying to @${comment.replyToUsername}`}>
+                    <p className="text-xs text-muted-foreground mt-1">
                       Replying to @{comment.replyToUsername}
                     </p>
                   )}

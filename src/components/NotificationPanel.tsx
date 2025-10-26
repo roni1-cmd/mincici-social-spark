@@ -94,15 +94,14 @@ const NotificationPanel = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="relative flex items-center space-x-4 text-foreground hover:text-primary transition-colors w-full text-left">
-          <Bell className="h-6 w-6 flex-shrink-0" />
-          <span className="text-lg">Notifications</span>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute left-5 -top-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </button>
+        </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
@@ -130,9 +129,9 @@ const NotificationPanel = () => {
                   )}
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">
-                    <span className="font-semibold truncate">{notification.fromDisplayName}</span>{" "}
-                    <span className="truncate">{getNotificationText(notification)}</span>
+                  <p className="text-sm">
+                    <span className="font-semibold">{notification.fromDisplayName}</span>{" "}
+                    {getNotificationText(notification)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">{formatTime(notification.timestamp)}</p>
                 </div>

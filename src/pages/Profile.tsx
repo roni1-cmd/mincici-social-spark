@@ -277,10 +277,10 @@ const Profile = () => {
                   )}
                 </div>
                 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1">
                   <div className="flex items-center gap-2 justify-between">
-                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                      <h3 className="text-xl font-bold truncate max-w-[150px] sm:max-w-[200px]" title={displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}>{displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold">{displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}</h3>
                       {isPrivate ? (
                         <Badge variant="secondary" className="gap-1">
                           <Lock className="h-3 w-3" />
@@ -314,7 +314,7 @@ const Profile = () => {
                       </Button>
                     )}
                   </div>
-                  <p className="text-muted-foreground truncate" title={`@${displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}`}>@{displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}</p>
+                  <p className="text-muted-foreground">@{displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}</p>
                   {displayProfile?.bio && (
                     <p className="text-sm mt-2">{displayProfile.bio}</p>
                   )}
@@ -354,18 +354,18 @@ const Profile = () => {
               </div>
 
               {relationshipPartner && (
-                <div className="mt-4 p-3 rounded-lg bg-muted flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-2">
+                <div className="mt-4 p-3 rounded-lg bg-muted flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <Heart className="h-4 w-4 text-red-500 fill-red-500" />
-                    <span className="text-sm text-left">
-                      {displayProfile?.relationshipStatus === "engaged" ? "Engaged to" :
-                       displayProfile?.relationshipStatus === "married" ? "Married to" :
-                       displayProfile?.relationshipStatus === "civil_partnership" ? "In a civil partnership with" :
+                    <span className="text-sm whitespace-nowrap">
+                      {displayProfile?.relationshipStatus === "engaged" ? "Engaged to" : 
+                       displayProfile?.relationshipStatus === "married" ? "Married to" : 
+                       displayProfile?.relationshipStatus === "civil_partnership" ? "In a civil partnership with" : 
                        "In a relationship with"}
                     </span>
                   </div>
                   <div
-                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 min-w-0 max-w-full"
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 min-w-0"
                     onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
                   >
                     <Avatar className="h-6 w-6 flex-shrink-0">
@@ -377,7 +377,7 @@ const Profile = () => {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <span className="text-sm font-semibold truncate max-w-[180px]" title={relationshipPartner.displayName}>{relationshipPartner.displayName}</span>
+                    <span className="text-sm font-semibold truncate">{relationshipPartner.displayName}</span>
                   </div>
                 </div>
               )}

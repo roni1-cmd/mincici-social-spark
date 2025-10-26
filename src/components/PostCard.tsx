@@ -179,24 +179,22 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                <span
-                  className="font-semibold text-sm cursor-pointer hover:underline truncate max-w-[120px] sm:max-w-[150px]"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span 
+                  className="font-semibold text-sm cursor-pointer hover:underline"
                   onClick={() => navigate(`/profile/${userId}`)}
-                  title={name}
                 >
                   {name}
                 </span>
-                <span
-                  className="text-muted-foreground text-sm cursor-pointer hover:underline truncate max-w-[100px] sm:max-w-[120px]"
+                <span 
+                  className="text-muted-foreground text-sm cursor-pointer hover:underline"
                   onClick={() => navigate(`/profile/${userId}`)}
-                  title={`@${handle}`}
                 >
                   @{handle}
                 </span>
-                <span className="text-muted-foreground text-sm flex-shrink-0">·</span>
-                <span className="text-muted-foreground text-sm flex-shrink-0">{formatTime(timestamp)}</span>
+                <span className="text-muted-foreground text-sm">·</span>
+                <span className="text-muted-foreground text-sm">{formatTime(timestamp)}</span>
               </div>
               
               {isOwnPost && (
