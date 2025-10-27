@@ -47,19 +47,23 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full">
-      <Sidebar />
-      
-      <main className="flex-1 lg:ml-0 mt-14 lg:mt-0">
+    <div className="flex min-h-screen w-full bg-background">
+      {/* Sidebar — NO BORDER, same background as page */}
+      <div className="fixed inset-y-0 left-0 z-20 w-64 bg-background lg:static lg:inset-auto">
+        <Sidebar />
+      </div>
+
+      {/* Main Feed — Full width, no borders, same background */}
+      <main className="flex-1 lg:ml-64 mt-14 lg:mt-0 bg-background">
         <div className="max-w-2xl mx-auto">
-          {/* Removed border-b and backdrop-blur for cleaner look */}
-          <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm p-4">
+          {/* Sticky Header — No border, softer blur */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm p-4">
             <h2 className="text-xl font-bold">Home</h2>
           </div>
 
           <div className="p-4">
             <CreatePost />
-            
+
             {loading ? (
               <FeedSkeleton />
             ) : posts.length === 0 ? (
@@ -90,10 +94,10 @@ const Home = () => {
         </div>
       </main>
 
-      {/* Trending sidebar - no borders, softer background */}
-      <aside className="hidden xl:block w-80 p-4">
+      {/* Trending Sidebar (XL+) — No borders, soft background */}
+      <aside className="hidden xl:block w-80 p-4 bg-background">
         <div className="sticky top-4">
-          <div className="bg-muted/50 rounded-lg p-4">
+          <div className="bg-muted/40 rounded-lg p-4">
             <h3 className="font-bold mb-3">Trending</h3>
             <p className="text-sm text-muted-foreground">Nothing trending yet</p>
           </div>
