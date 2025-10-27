@@ -376,11 +376,11 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Relationship Section */}
+              {/* Relationship Section - Left Aligned */}
               {relationshipPartner && (
-                <div className="mt-6 p-4 rounded-lg bg-muted flex flex-col items-center gap-2 text-center">
+                <div className="mt-6 p-4 rounded-lg bg-muted flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                    <Heart className="h-4 w-4 text-red-500 fill-red-500 flex-shrink-0" />
                     <span className="text-sm font-medium">
                       {displayProfile?.relationshipStatus === "engaged"
                         ? "Engaged to"
@@ -393,7 +393,7 @@ const Profile = () => {
                   </div>
 
                   <div
-                    className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
                   >
                     <Avatar className="h-7 w-7">
@@ -411,15 +411,15 @@ const Profile = () => {
               )}
 
               {displayProfile?.relationshipStatus === "single" && (
-                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2 justify-center">
-                  <Heart className="h-4 w-4" />
+                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2">
+                  <Heart className="h-4 w-4 flex-shrink-0" />
                   <span className="text-sm">Single</span>
                 </div>
               )}
 
               {displayProfile?.relationshipStatus === "widowed" && (
-                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2 justify-center">
-                  <Heart className="h-4 w-4" />
+                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2">
+                  <Heart className="h-4 w-4 flex-shrink-0" />
                   <span className="text-sm">Widowed</span>
                 </div>
               )}
