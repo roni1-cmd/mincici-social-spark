@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Image, Send, FileText, Video, Mic, AtSign } from "lucide-react";
+import { Image, Send, FileText, Video, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Text area } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +18,6 @@ const CreatePost = () => {
   const { user, userProfile } = useAuth();
   const { toast } = useToast();
 
-  /* ────────────────────── Image upload ────────────────────── */
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -31,7 +30,10 @@ const CreatePost = () => {
     try {
       const response = await fetch(
         "https://api.cloudinary.com/v1_1/dwnzxkata/image/upload",
-        { loader: "POST", body: formData }
+        {
+          method: "POST",
+          body: formData,
+        }
       );
       const data = await response.json();
       setImageUrl(data.secure_url);
@@ -50,7 +52,6 @@ const CreatePost = () => {
     }
   };
 
-  /* ────────────────────── Post ────────────────────── */
   const handlePost = async () => {
     if (!content.trim() && !imageUrl) {
       toast({
@@ -64,6 +65,7 @@ const CreatePost = () => {
     setPosting(true);
     try {
       const postsRef = ref(database, "posts");
+      
       await push(postsRef, {
         userId: user?.uid,
         userEmail: user?.email,
@@ -108,7 +110,6 @@ const CreatePost = () => {
           className="min-h-24 resize-none border-0 focus-visible:ring-0 text-base"
         />
 
-        {/* Image preview */}
         {imageUrl && (
           <div className="relative">
             <img
@@ -127,10 +128,10 @@ const CreatePost = () => {
           </div>
         )}
 
-        {/* ───── Toolbar (all actions in one line) ───── */}
+        <TagInput selectedTags={taggedUsers} onTagsChange={setTaggedUsers} />
+
         <div className="flex items-center justify-between border-t border-border pt-3">
           <div className="flex items-center space-x-1">
-            {/* Image */}
             <label htmlFor="image-upload">
               <Button
                 variant="ghost"
@@ -151,8 +152,7 @@ const CreatePost = () => {
               className="hidden"
               onChange={handleImageUpload}
             />
-
-            {/* Video (coming soon) */}
+            
             <Button
               variant="ghost"
               size="icon"
@@ -162,8 +162,7 @@ const CreatePost = () => {
             >
               <Video className="h-5 w-5" />
             </Button>
-
-            {/* Document (coming soon) */}
+            
             <Button
               variant="ghost"
               size="icon"
@@ -173,8 +172,7 @@ const CreatePost = () => {
             >
               <FileText className="h-5 w-5" />
             </Button>
-
-            {/* Voice (coming soon) */}
+            
             <Button
               variant="ghost"
               size="icon"
@@ -184,26 +182,8 @@ const CreatePost = () => {
             >
               <Mic className="h-5 w-5" />
             </Button>
-
-            {/* ───── Tag followers button ───── */}
-            <TagInput
-              selectedTags={taggedTags}
-              onTagsChange={setTaggedUsers}
-              // Render as a button-like control inside the toolbar
-              renderTrigger={(open) => (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-primary hover:bg-primary/10"
-                  title="Tag followers"
-                >
-                  <AtSign className="h-5 w-5" />
-                </Button>
-              )}
-            />
           </div>
 
-          {/* Post button */}
           <Button
             onClick={handlePost}
             disabled={posting || uploading || (!content.trim() && !imageUrl)}
