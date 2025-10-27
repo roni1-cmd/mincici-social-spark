@@ -1,19 +1,10 @@
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, ThumbsUp, Laugh, Angry, Frown } from "lucide-react";
 import { useState, useEffect } from "react";
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue } from "firebase/database";
 import { database } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface ViewFullPostDialogProps {
   postId: string;
@@ -31,28 +22,11 @@ interface Comment {
   timestamp: number;
 }
 
-interface ReactionCounts {
-  heart: number;
-  thumbsUp: number;
-  laugh: number;
-  sad: number;
-  angry: number;
-}
-
 const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [userReaction, setUserReaction] = useState<string | null>(null);
-  const [reactionCounts, setReactionCounts] = useState<ReactionCounts>({
-    heart: 0,
-    thumbsUp: 0,
-    laugh: 0,
-    sad: 0,
-    angry: 0,
-  });
 
   useEffect(() => {
     if (!isOpen || !postId) return;
@@ -60,26 +34,7 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
     const postRef = ref(database, `posts/${postId}`);
     const unsubscribe = onValue(postRef, (snapshot) => {
       if (snapshot.exists()) {
-        const postData = snapshot.val();
-        setPost(postData);
-        
-        const reactions = postData.reactions || {};
-        const counts = {
-          heart: 0,
-          thumbsUp: 0,
-          laugh: 0,
-          sad: 0,
-          angry: 0,
-        };
-        
-        Object.values(reactions).forEach((reaction: any) => {
-          if (reaction in counts) {
-            counts[reaction as keyof ReactionCounts]++;
-          }
-        });
-        
-        setReactionCounts(counts);
-        setUserReaction(reactions[user?.uid || ""] || null);
+        setPost(snapshot.val());
       }
     });
 
@@ -104,23 +59,6 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
     };
   }, [isOpen, postId, user]);
 
-  const handleReaction = async (reactionType: string) => {
-    if (!user) return;
-
-    const postRef = ref(database, `posts/${postId}`);
-    const newReactions = { ...(post.reactions || {}) };
-
-    if (userReaction === reactionType) {
-      delete newReactions[user.uid];
-      setUserReaction(null);
-    } else {
-      newReactions[user.uid] = reactionType;
-      setUserReaction(reactionType);
-    }
-
-    await update(postRef, { reactions: newReactions });
-  };
-
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -132,16 +70,6 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
     if (hours > 0) return `${hours}h ago`;
     return "Just now";
   };
-
-  const reactionIcons = {
-    heart: Heart,
-    thumbsUp: ThumbsUp,
-    laugh: Laugh,
-    sad: Frown,
-    angry: Angry,
-  };
-
-  const totalReactions = Object.values(reactionCounts).reduce((sum, count) => sum + count, 0);
 
   if (!post) return null;
 
@@ -179,48 +107,12 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
             />
           )}
 
-          <div className="flex items-center gap-4 pt-2 border-t">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  {userReaction ? (
-                    <>
-                      {(() => {
-                        const Icon = reactionIcons[userReaction as keyof typeof reactionIcons];
-                        return <Icon className="h-4 w-4 fill-current text-primary" />;
-                      })()}
-                      <span className="text-xs">{totalReactions}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Heart className="h-4 w-4" />
-                      <span className="text-xs">{totalReactions}</span>
-                    </>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {Object.entries(reactionIcons).map(([key, Icon]) => (
-                  <DropdownMenuItem
-                    key={key}
-                    onClick={() => handleReaction(key)}
-                    className="gap-2"
-                  >
-                    <Icon className={`h-4 w-4 ${userReaction === key ? "fill-current text-primary" : ""}`} />
-                    <span>{reactionCounts[key as keyof ReactionCounts]}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-xs">{comments.length}</span>
-            </div>
-          </div>
+          {/* Removed likes and comment count bar entirely */}
 
           <div className="border-t pt-4">
-            <h3 className="font-semibold mb-4">Comments</h3>
+            <h3 className="font-semibold mb-4">
+              Comments {comments.length > 0 && <span className="text-muted-foreground">({comments.length})</span>}
+            </h3>
             <div className="space-y-4">
               {comments.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">No comments yet</p>
