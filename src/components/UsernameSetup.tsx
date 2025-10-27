@@ -86,7 +86,7 @@ const UsernameSetup = () => {
 
   return (
     <Dialog open={showDialog}>
-      <DialogContent className="sm:max-w-md" hideClose>
+      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Choose your username</DialogTitle>
           <DialogDescription>

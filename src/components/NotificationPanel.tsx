@@ -57,11 +57,7 @@ const NotificationPanel = () => {
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
-    if (notification.type === "follow" || notification.type === "relationship") {
-      navigate(`/profile/${notification.fromUserId}`);
-    } else if (notification.postId) {
-      navigate("/");
-    }
+    navigate(`/notifications/${notification.id}`);
   };
 
   const formatTime = (timestamp: number) => {

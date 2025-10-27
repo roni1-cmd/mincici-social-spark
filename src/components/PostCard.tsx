@@ -22,12 +22,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { ref, update, remove, push } from "firebase/database";
+import { ref, update, remove, push, get } from "firebase/database";
 import { database } from "@/lib/firebase";
 import ImageLightbox from "./ImageLightbox";
 import EditPostDialog from "./EditPostDialog";
 import CommentDialog from "./CommentDialog";
 import ViewFullPostDialog from "./ViewFullPostDialog";
+import { Badge } from "@/components/ui/badge";
+import { useEffect } from "react";
 
 interface PostCardProps {
   postId: string;
@@ -42,9 +44,10 @@ interface PostCardProps {
   likes: number;
   likedBy?: string[];
   commentsCount?: number;
+  taggedUsers?: string[];
 }
 
-const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, content, imageUrl, timestamp, likes, likedBy = [], commentsCount = 0 }: PostCardProps) => {
+const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, content, imageUrl, timestamp, likes, likedBy = [], commentsCount = 0, taggedUsers = [] }: PostCardProps) => {
   const { user, userProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -57,8 +60,29 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [viewFullPostOpen, setViewFullPostOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [taggedUsernames, setTaggedUsernames] = useState<{[key: string]: string}>({});
   
   const isOwnPost = user?.uid === userId;
+
+  useEffect(() => {
+    const fetchTaggedUsernames = async () => {
+      if (!taggedUsers || taggedUsers.length === 0) return;
+      
+      const usernames: {[key: string]: string} = {};
+      await Promise.all(
+        taggedUsers.map(async (uid) => {
+          const userRef = ref(database, `users/${uid}`);
+          const snapshot = await get(userRef);
+          if (snapshot.exists()) {
+            usernames[uid] = snapshot.val().username || "";
+          }
+        })
+      );
+      setTaggedUsernames(usernames);
+    };
+
+    fetchTaggedUsernames();
+  }, [taggedUsers]);
   const formatTime = (timestamp: string) => {
     if (!timestamp) return "Just now";
     const date = new Date(timestamp);
@@ -232,6 +256,21 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
               >
                 {showFullContent ? "Show Less" : "See Full"}
               </Button>
+            )}
+
+            {taggedUsers && taggedUsers.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {taggedUsers.map((uid) => (
+                  <Badge
+                    key={uid}
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                    onClick={() => navigate(`/profile/${uid}`)}
+                  >
+                    @{taggedUsernames[uid] || "user"}
+                  </Badge>
+                ))}
+              </div>
             )}
 
             {imageUrl && (

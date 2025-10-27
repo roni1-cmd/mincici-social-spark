@@ -7,12 +7,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ref, push, serverTimestamp } from "firebase/database";
 import { database } from "@/lib/firebase";
+import TagInput from "@/components/TagInput";
 
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [taggedUsers, setTaggedUsers] = useState<string[]>([]);
   const { user, userProfile } = useAuth();
   const { toast } = useToast();
 
@@ -72,6 +74,7 @@ const CreatePost = () => {
         photoURL: userProfile?.photoURL || "",
         content,
         imageUrl: imageUrl || null,
+        taggedUsers: taggedUsers.length > 0 ? taggedUsers : null,
         timestamp: serverTimestamp(),
         likes: 0,
         likedBy: [],
@@ -80,6 +83,7 @@ const CreatePost = () => {
 
       setContent("");
       setImageUrl("");
+      setTaggedUsers([]);
       toast({
         title: "Posted!",
         description: "Your post has been shared.",
@@ -123,6 +127,8 @@ const CreatePost = () => {
             </Button>
           </div>
         )}
+
+        <TagInput selectedTags={taggedUsers} onTagsChange={setTaggedUsers} />
 
         <div className="flex items-center justify-between border-t border-border pt-3">
           <div className="flex items-center space-x-1">

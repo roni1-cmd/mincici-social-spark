@@ -170,6 +170,26 @@ const Profile = () => {
           [`followers/${userId}/${user.uid}`]: null,
           [`following/${user.uid}/${userId}`]: null,
         };
+
+        const currentUserRef = ref(database, `users/${user.uid}`);
+        const currentUserSnapshot = await get(currentUserRef);
+        if (currentUserSnapshot.exists()) {
+          const currentUserData = currentUserSnapshot.val();
+          if (currentUserData.relationshipWith === userId) {
+            updates[`users/${user.uid}/relationshipWith`] = null;
+            updates[`users/${user.uid}/relationshipStatus`] = null;
+          }
+        }
+
+        const otherUserRef = ref(database, `users/${userId}`);
+        const otherUserSnapshot = await get(otherUserRef);
+        if (otherUserSnapshot.exists()) {
+          const otherUserData = otherUserSnapshot.val();
+          if (otherUserData.relationshipWith === user.uid) {
+            updates[`users/${userId}/relationshipWith`] = null;
+            updates[`users/${userId}/relationshipStatus`] = null;
+          }
+        }
         
         if (postsSnapshot.exists()) {
           Object.entries(postsSnapshot.val()).forEach(([postId, post]: [string, any]) => {
@@ -261,8 +281,8 @@ const Profile = () => {
 
           <div className="p-4">
             <Card className="p-6">
-              <div className="flex items-start space-x-4">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
+                <div className="relative flex-shrink-0">
                   <Avatar className="h-20 w-20">
                     {displayProfile?.photoURL ? (
                       <AvatarImage src={displayProfile.photoURL} alt={displayProfile.username} />
@@ -277,17 +297,17 @@ const Profile = () => {
                   )}
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 justify-between">
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between mb-2">
                     <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                      <h3 className="text-xl font-bold truncate max-w-[150px] sm:max-w-[200px]" title={displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}>{displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}</h3>
+                      <h3 className="text-xl font-bold break-words" title={displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}>{displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}</h3>
                       {isPrivate ? (
-                        <Badge variant="secondary" className="gap-1">
+                        <Badge variant="secondary" className="gap-1 flex-shrink-0">
                           <Lock className="h-3 w-3" />
                           Private
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1">
+                        <Badge variant="secondary" className="gap-1 flex-shrink-0">
                           <Globe className="h-3 w-3" />
                           Public
                         </Badge>
@@ -298,7 +318,7 @@ const Profile = () => {
                         variant={isFollowing ? "outline" : "default"}
                         size="sm"
                         onClick={handleFollow}
-                        className="gap-2"
+                        className="gap-2 flex-shrink-0"
                       >
                         {isFollowing ? (
                           <>
@@ -314,11 +334,10 @@ const Profile = () => {
                       </Button>
                     )}
                   </div>
-                  <p className="text-muted-foreground truncate" title={`@${displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}`}>@{displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}</p>
+                  <p className="text-muted-foreground break-words" title={`@${displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}`}>@{displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}</p>
                   {displayProfile?.bio && (
-                    <p className="text-sm mt-2">{displayProfile.bio}</p>
+                    <p className="text-sm mt-2 break-words">{displayProfile.bio}</p>
                   )}
-                  {isOwnProfile && <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>}
                 </div>
               </div>
 
@@ -354,10 +373,10 @@ const Profile = () => {
               </div>
 
               {relationshipPartner && (
-                <div className="mt-4 p-3 rounded-lg bg-muted flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Heart className="h-4 w-4 text-red-500 fill-red-500" />
-                    <span className="text-sm text-left">
+                <div className="mt-4 p-3 rounded-lg bg-muted flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-4 w-4 text-red-500 fill-red-500 flex-shrink-0" />
+                    <span className="text-sm break-words">
                       {displayProfile?.relationshipStatus === "engaged" ? "Engaged to" :
                        displayProfile?.relationshipStatus === "married" ? "Married to" :
                        displayProfile?.relationshipStatus === "civil_partnership" ? "In a civil partnership with" :
@@ -365,7 +384,7 @@ const Profile = () => {
                     </span>
                   </div>
                   <div
-                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 min-w-0 max-w-full"
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 pl-6"
                     onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
                   >
                     <Avatar className="h-6 w-6 flex-shrink-0">
@@ -377,7 +396,7 @@ const Profile = () => {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <span className="text-sm font-semibold truncate max-w-[180px]" title={relationshipPartner.displayName}>{relationshipPartner.displayName}</span>
+                    <span className="text-sm font-semibold break-words" title={relationshipPartner.displayName}>{relationshipPartner.displayName}</span>
                   </div>
                 </div>
               )}

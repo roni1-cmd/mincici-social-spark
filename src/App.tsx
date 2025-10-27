@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
 import NotFound from "./pages/NotFound";
 import UsernameSetup from "./components/UsernameSetup";
+import Notifications from "./pages/Notifications";
+import Messages from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -30,8 +32,10 @@ const App = () => (
             <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><div className="flex min-h-screen items-center justify-center"><p className="text-muted-foreground">Notifications - Coming soon</p></div></ProtectedRoute>} />
-            <Route path="/messages" element={<ProtectedRoute><div className="flex min-h-screen items-center justify-center"><p className="text-muted-foreground">Messages - Coming soon</p></div></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/notifications/:notificationId" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/messages/:conversationId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
