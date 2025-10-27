@@ -373,7 +373,7 @@ const Profile = () => {
               </div>
 
               {relationshipPartner && (
-                <div className="mt-4 p-3 rounded-lg bg-muted flex flex-col gap-2">
+                <div className="mt-6 p-3 rounded-lg bg-muted flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <Heart className="h-4 w-4 text-red-500 fill-red-500 flex-shrink-0" />
                     <span className="text-sm break-words">
@@ -400,16 +400,16 @@ const Profile = () => {
                   </div>
                 </div>
               )}
-              
+
               {displayProfile?.relationshipStatus === "single" && (
-                <div className="mt-4 p-3 rounded-lg bg-muted flex items-center gap-2">
+                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2">
                   <Heart className="h-4 w-4" />
                   <span className="text-sm">Single</span>
                 </div>
               )}
-              
+
               {displayProfile?.relationshipStatus === "widowed" && (
-                <div className="mt-4 p-3 rounded-lg bg-muted flex items-center gap-2">
+                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2">
                   <Heart className="h-4 w-4" />
                   <span className="text-sm">Widowed</span>
                 </div>
