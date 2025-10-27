@@ -1,4 +1,3 @@
-2.1s
 import { ExternalLink, Sparkles } from "lucide-react";
 import {
   Accordion,
