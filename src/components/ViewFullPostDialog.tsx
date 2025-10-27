@@ -77,8 +77,13 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${post.userId}`)}>
+          {/* ---- FIXED HEADER ---- */}
+          <div className="flex flex-row items-center gap-3">
+            {/* Avatar */}
+            <Avatar
+              className="h-12 w-12 flex-shrink-0 cursor-pointer"
+              onClick={() => navigate(`/profile/${post.userId}`)}
+            >
               {post.photoURL ? (
                 <AvatarImage src={post.photoURL} alt={post.username} />
               ) : (
@@ -87,18 +92,27 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
                 </AvatarFallback>
               )}
             </Avatar>
+
+            {/* Name & username – always beside avatar */}
             <div className="min-w-0 flex-1">
-              <p className="font-semibold cursor-pointer hover:underline truncate" onClick={() => navigate(`/profile/${post.userId}`)} title={post.displayName || post.username}>
+              <p
+                className="font-semibold cursor-pointer hover:underline truncate"
+                onClick={() => navigate(`/profile/${post.userId}`)}
+                title={post.displayName || post.username}
+              >
                 {post.displayName || post.username}
               </p>
-              <p className="text-sm text-muted-foreground truncate" title={`@${post.username}`}>@{post.username}</p>
+              <p className="text-sm text-muted-foreground truncate" title={`@${post.username}`}>
+                @{post.username}
+              </p>
             </div>
           </div>
+          {/* --------------------- */}
         </DialogHeader>
 
         <div className="space-y-4">
           <p className="text-lg whitespace-pre-wrap">{post.content}</p>
-          
+
           {post.imageUrl && (
             <img
               src={post.imageUrl}
@@ -107,19 +121,22 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
             />
           )}
 
-          {/* Removed likes and comment count bar entirely */}
-
+          {/* ---- COMMENTS SECTION ---- */}
           <div className="border-t pt-4">
             <h3 className="font-semibold mb-4">
               Comments {comments.length > 0 && <span className="text-muted-foreground">({comments.length})</span>}
             </h3>
+
             <div className="space-y-4">
               {comments.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">No comments yet</p>
               ) : (
                 comments.map((comment) => (
                   <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8 flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${comment.userId}`)}>
+                    <Avatar
+                      className="h-8 w-8 flex-shrink-0 cursor-pointer"
+                      onClick={() => navigate(`/profile/${comment.userId}`)}
+                    >
                       {comment.photoURL ? (
                         <AvatarImage src={comment.photoURL} alt={comment.username} />
                       ) : (
@@ -128,12 +145,19 @@ const ViewFullPostDialog = ({ postId, isOpen, onClose }: ViewFullPostDialogProps
                         </AvatarFallback>
                       )}
                     </Avatar>
+
                     <div className="flex-1 min-w-0 bg-muted rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <p className="font-semibold text-sm cursor-pointer hover:underline truncate max-w-[150px] sm:max-w-[200px]" onClick={() => navigate(`/profile/${comment.userId}`)} title={comment.displayName}>
+                        <p
+                          className="font-semibold text-sm cursor-pointer hover:underline truncate max-w-[150px] sm:max-w-[200px]"
+                          onClick={() => navigate(`/profile/${comment.userId}`)}
+                          title={comment.displayName}
+                        >
                           {comment.displayName}
                         </p>
-                        <span className="text-xs text-muted-foreground flex-shrink-0">{formatTime(comment.timestamp)}</span>
+                        <span className="text-xs text-muted-foreground flex-shrink-0">
+                          {formatTime(comment.timestamp)}
+                        </span>
                       </div>
                       <p className="text-sm break-words">{comment.content}</p>
                     </div>
