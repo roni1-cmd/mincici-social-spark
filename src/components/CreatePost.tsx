@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Image, Send, FileText, Video, Mic, X } from "lucide-react";
+import { Image, Send, FileText, Video, Mic, AtSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Text area } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ref, push, serverTimestamp } from "firebase/database";
@@ -10,7 +10,6 @@ import { database } from "@/lib/firebase";
 import TagInput from "@/components/TagInput";
 
 const CreatePost = () => {
-  const [open, setOpen] = useState(false);
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -19,6 +18,7 @@ const CreatePost = () => {
   const { user, userProfile } = useAuth();
   const { toast } = useToast();
 
+  /* ────────────────────── Image upload ────────────────────── */
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -31,10 +31,7 @@ const CreatePost = () => {
     try {
       const response = await fetch(
         "https://api.cloudinary.com/v1_1/dwnzxkata/image/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
+        { loader: "POST", body: formData }
       );
       const data = await response.json();
       setImageUrl(data.secure_url);
@@ -53,6 +50,7 @@ const CreatePost = () => {
     }
   };
 
+  /* ────────────────────── Post ────────────────────── */
   const handlePost = async () => {
     if (!content.trim() && !imageUrl) {
       toast({
@@ -81,11 +79,9 @@ const CreatePost = () => {
         commentsCount: 0,
       });
 
-      // Reset and close
       setContent("");
       setImageUrl("");
       setTaggedUsers([]);
-      setOpen(false);
       toast({
         title: "Posted!",
         description: "Your post has been shared.",
@@ -102,142 +98,123 @@ const CreatePost = () => {
     }
   };
 
-  const closeModal = () => {
-    if (!posting && !uploading) {
-      setOpen(false);
-    }
-  };
-
   return (
-    <>
-      {/* Trigger Button */}
-      <Button
-        onClick={() => setOpen(true)}
-        className="w-full rounded-full font-medium"
-        size="lg"
-      >
-        <Send className="h-4 w-4 mr-2" />
-        Create Post
-      </Button>
+    <Card className="p-4 mb-6">
+      <div className="space-y-4">
+        <Textarea
+          placeholder="What's happening?"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="min-h-24 resize-none border-0 focus-visible:ring-0 text-base"
+        />
 
-      {/* Modal */}
-      <Dialog open={open} onOpenChange={closeModal}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl">
-          {/* Backdrop blur is automatic in shadcn Dialog */}
-          <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <DialogHeader className="p-5 pb-3 border-b border-border/50">
-              <div className="flex items-center justify-between">
-                <DialogTitle className="text-xl font-semibold">Create Post</DialogTitle>
+        {/* Image preview */}
+        {imageUrl && (
+          <div className="relative">
+            <img
+              src={imageUrl}
+              alt="Upload preview"
+              className="w-full rounded-lg max-h-96 object-cover"
+            />
+            <Button
+              variant="destructive"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={() => setImageUrl("")}
+            >
+              Remove
+            </Button>
+          </div>
+        )}
+
+        {/* ───── Toolbar (all actions in one line) ───── */}
+        <div className="flex items-center justify-between border-t border-border pt-3">
+          <div className="flex items-center space-x-1">
+            {/* Image */}
+            <label htmlFor="image-upload">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:bg-primary/10"
+                disabled={uploading}
+                asChild
+              >
+                <span>
+                  <Image className="h-5 w-5" />
+                </span>
+              </Button>
+            </label>
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+
+            {/* Video (coming soon) */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary hover:bg-primary/10"
+              disabled
+              title="Coming soon"
+            >
+              <Video className="h-5 w-5" />
+            </Button>
+
+            {/* Document (coming soon) */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary hover:bg-primary/10"
+              disabled
+              title="Coming soon"
+            >
+              <FileText className="h-5 w-5" />
+            </Button>
+
+            {/* Voice (coming soon) */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary hover:bg-primary/10"
+              disabled
+              title="Coming soon"
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
+
+            {/* ───── Tag followers button ───── */}
+            <TagInput
+              selectedTags={taggedTags}
+              onTagsChange={setTaggedUsers}
+              // Render as a button-like control inside the toolbar
+              renderTrigger={(open) => (
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={closeModal}
-                  disabled={posting || uploading}
-                  className="h-8 w-8 rounded-full"
+                  className="text-primary hover:bg-primary/10"
+                  title="Tag followers"
                 >
-                  <X className="h-4 w-4" />
+                  <AtSign className="h-5 w-5" />
                 </Button>
-              </div>
-            </DialogHeader>
-
-            <div className="p-5 space-y-4">
-              <Textarea
-                placeholder="What's happening?"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="min-h-32 resize-none border-0 focus-visible:ring-0 text-base bg-transparent"
-                disabled={posting}
-              />
-
-              {imageUrl && (
-                <div className="relative rounded-lg overflow-hidden border border-border/50">
-                  <img
-                    src={imageUrl}
-                    alt="Upload preview"
-                    className="w-full max-h-80 object-cover"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2 h-8"
-                    onClick={() => setImageUrl("")}
-                    disabled={posting}
-                  >
-                    Remove
-                  </Button>
-                </div>
               )}
-
-              <TagInput selectedTags={taggedUsers} onTagsChange={setTaggedUsers} disabled={posting} />
-
-              <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                <div className="flex items-center space-x-1">
-                  <label htmlFor="modal-image-upload">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-primary hover:bg-primary/10 h-9 w-9"
-                      disabled={uploading || posting}
-                      asChild
-                    >
-                      <span>
-                        <Image className="h-5 w-5" />
-                      </span>
-                    </Button>
-                  </label>
-                  <input
-                    id="modal-image-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    disabled={posting}
-                  />
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-primary hover:bg-primary/10 h-9 w-9"
-                    disabled
-                    title="Coming soon"
-                  >
-                    <Video className="h-5 w-5" />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-primary hover:bg-primary/10 h-9 w-9"
-                    disabled
-                    title="Coming soon"
-                  >
-                    <FileText className="h-5 w-5" />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-primary hover:bg-primary/10 h-9 w-9"
-                    disabled
-                    title="Coming soon"
-                  >
-                    <Mic className="h-5 w-5" />
-                  </Button>
-                </div>
-
-                <Button
-                  onClick={handlePost}
-                  disabled={posting || uploading || (!content.trim() && !imageUrl)}
-                  className="rounded-full px-6"
-                >
-                  {posting ? "Posting..." : "Post"}
-                </Button>
-              </div>
-            </div>
+            />
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+
+          {/* Post button */}
+          <Button
+            onClick={handlePost}
+            disabled={posting || uploading || (!content.trim() && !imageUrl)}
+            className="rounded-full"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Post
+          </Button>
+        </div>
+      </div>
+    </Card>
   );
 };
 
