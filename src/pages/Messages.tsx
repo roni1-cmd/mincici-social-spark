@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Search } from "lucide-react";
+import { Send, Search, ArrowLeft } from "lucide-react";
 import { ref, onValue, push, update, get, query, orderByChild, equalTo } from "firebase/database";
 import { database } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -292,10 +292,18 @@ const Messages = () => {
             </div>
 
             {/* Messages Area */}
-            <div className="hidden md:flex flex-1 flex-col">
+            <div className={`${conversationId ? "flex" : "hidden md:flex"} flex-1 flex-col ${conversationId ? "absolute inset-0 bg-card z-20 md:relative md:z-auto" : ""}`}>
               {conversationId && selectedUser ? (
                 <>
                   <div className="border-b border-border p-4 flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="md:hidden"
+                      onClick={() => navigate("/messages")}
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
                     <Avatar className="h-10 w-10">
                       {selectedUser.photoURL ? (
                         <AvatarImage src={selectedUser.photoURL} alt={selectedUser.username} />

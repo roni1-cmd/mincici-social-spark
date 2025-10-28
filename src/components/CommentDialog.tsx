@@ -185,7 +185,7 @@ const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-full max-h-[95vh] h-[95vh] w-[95vw] flex flex-col rounded-2xl">
+      <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 rounded-none p-6 flex flex-col">
         <DialogHeader>
           <DialogTitle>Comments</DialogTitle>
         </DialogHeader>

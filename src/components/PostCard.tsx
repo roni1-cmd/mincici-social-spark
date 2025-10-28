@@ -259,16 +259,19 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
             )}
 
             {taggedUsers && taggedUsers.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {taggedUsers.map((uid) => (
-                  <Badge
-                    key={uid}
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                    onClick={() => navigate(`/profile/${uid}`)}
-                  >
-                    @{taggedUsernames[uid] || "user"}
-                  </Badge>
+              <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-muted-foreground">
+                <span>is with</span>
+                {taggedUsers.map((uid, index) => (
+                  <span key={uid} className="flex items-center gap-1">
+                    <Badge
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                      onClick={() => navigate(`/profile/${uid}`)}
+                    >
+                      {taggedUsernames[uid] || "user"}
+                    </Badge>
+                    {index < taggedUsers.length - 1 && <span>,</span>}
+                  </span>
                 ))}
               </div>
             )}
@@ -317,7 +320,7 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
                 variant="link"
                 size="sm"
                 className="text-xs text-primary"
-                onClick={() => setViewFullPostOpen(true)}
+                onClick={() => navigate(`/post/${postId}`)}
               >
                 View full post
               </Button>

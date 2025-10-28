@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import UsernameSetup from "./components/UsernameSetup";
 import Notifications from "./pages/Notifications";
 import Messages from "./pages/Messages";
+import ViewFullPost from "./pages/ViewFullPost";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/notifications/:notificationId" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/messages/:conversationId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/post/:postId" element={<ProtectedRoute><ViewFullPost /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

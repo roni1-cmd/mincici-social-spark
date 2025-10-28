@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Image, Send, FileText, Video, Mic, AtSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Text area } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ref, push, serverTimestamp } from "firebase/database";
@@ -31,7 +33,7 @@ const CreatePost = () => {
     try {
       const response = await fetch(
         "https://api.cloudinary.com/v1_1/dwnzxkata/image/upload",
-        { loader: "POST", body: formData }
+        { method: "POST", body: formData }
       );
       const data = await response.json();
       setImageUrl(data.secure_url);
@@ -99,122 +101,143 @@ const CreatePost = () => {
   };
 
   return (
-    <Card className="p-4 mb-6">
-      <div className="space-y-4">
-        <Textarea
-          placeholder="What's happening?"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="min-h-24 resize-none border-0 focus-visible:ring-0 text-base"
-        />
-
-        {/* Image preview */}
-        {imageUrl && (
-          <div className="relative">
-            <img
-              src={imageUrl}
-              alt="Upload preview"
-              className="w-full rounded-lg max-h-96 object-cover"
-            />
-            <Button
-              variant="destructive"
-              size="sm"
-              className="absolute top-2 right-2"
-              onClick={() => setImageUrl("")}
-            >
-              Remove
-            </Button>
-          </div>
-        )}
-
-        {/* ───── Toolbar (all actions in one line) ───── */}
-        <div className="flex items-center justify-between border-t border-border pt-3">
-          <div className="flex items-center space-x-1">
-            {/* Image */}
-            <label htmlFor="image-upload">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-primary hover:bg-primary/10"
-                disabled={uploading}
-                asChild
-              >
-                <span>
-                  <Image className="h-5 w-5" />
-                </span>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Card className="p-3 mb-6 cursor-pointer hover:bg-muted/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              {userProfile?.photoURL ? (
+                <AvatarImage src={userProfile.photoURL} alt={userProfile.username} />
+              ) : (
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {userProfile?.username?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <span className="text-muted-foreground flex-1">What's on your mind?</span>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Image className="h-4 w-4 text-primary" />
               </Button>
-            </label>
-            <input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageUpload}
-            />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <AtSign className="h-4 w-4 text-primary" />
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </DialogTrigger>
 
-            {/* Video (coming soon) */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-primary hover:bg-primary/10"
-              disabled
-              title="Coming soon"
-            >
-              <Video className="h-5 w-5" />
-            </Button>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Create Post</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <Textarea
+            placeholder="What's happening?"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="min-h-32 resize-none border focus-visible:ring-2 text-base"
+          />
 
-            {/* Document (coming soon) */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-primary hover:bg-primary/10"
-              disabled
-              title="Coming soon"
-            >
-              <FileText className="h-5 w-5" />
-            </Button>
+          {/* Image preview */}
+          {imageUrl && (
+            <div className="relative">
+              <img
+                src={imageUrl}
+                alt="Upload preview"
+                className="w-full rounded-lg max-h-96 object-cover"
+              />
+              <Button
+                variant="destructive"
+                size="sm"
+                className="absolute top-2 right-2"
+                onClick={() => setImageUrl("")}
+              >
+                Remove
+              </Button>
+            </div>
+          )}
 
-            {/* Voice (coming soon) */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-primary hover:bg-primary/10"
-              disabled
-              title="Coming soon"
-            >
-              <Mic className="h-5 w-5" />
-            </Button>
+          {/* Tagged users input */}
+          <TagInput
+            selectedTags={taggedUsers}
+            onTagsChange={setTaggedUsers}
+          />
 
-            {/* ───── Tag followers button ───── */}
-            <TagInput
-              selectedTags={taggedTags}
-              onTagsChange={setTaggedUsers}
-              // Render as a button-like control inside the toolbar
-              renderTrigger={(open) => (
+          {/* Toolbar */}
+          <div className="flex items-center justify-between border-t pt-3">
+            <div className="flex items-center gap-1">
+              {/* Image */}
+              <label htmlFor="image-upload">
                 <Button
                   variant="ghost"
                   size="icon"
                   className="text-primary hover:bg-primary/10"
-                  title="Tag followers"
+                  disabled={uploading}
+                  asChild
                 >
-                  <AtSign className="h-5 w-5" />
+                  <span>
+                    <Image className="h-5 w-5" />
+                  </span>
                 </Button>
-              )}
-            />
-          </div>
+              </label>
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
 
-          {/* Post button */}
-          <Button
-            onClick={handlePost}
-            disabled={posting || uploading || (!content.trim() && !imageUrl)}
-            className="rounded-full"
-          >
-            <Send className="h-4 w-4 mr-2" />
-            Post
-          </Button>
+              {/* Video (coming soon) */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:bg-primary/10"
+                disabled
+                title="Coming soon"
+              >
+                <Video className="h-5 w-5" />
+              </Button>
+
+              {/* Document (coming soon) */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:bg-primary/10"
+                disabled
+                title="Coming soon"
+              >
+                <FileText className="h-5 w-5" />
+              </Button>
+
+              {/* Voice (coming soon) */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:bg-primary/10"
+                disabled
+                title="Coming soon"
+              >
+                <Mic className="h-5 w-5" />
+              </Button>
+
+              {/* Tag followers - Shows in separate section below */}
+            </div>
+
+            {/* Post button */}
+            <Button
+              onClick={handlePost}
+              disabled={posting || uploading || (!content.trim() && !imageUrl)}
+              className="rounded-full px-6"
+            >
+              {posting ? "Posting..." : "Post"}
+            </Button>
+          </div>
         </div>
-      </div>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };
 

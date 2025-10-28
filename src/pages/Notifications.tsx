@@ -228,7 +228,7 @@ const Notifications = () => {
                       ) : selectedNotification.postId ? (
                         <button
                           className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
-                          onClick={() => navigate("/")}
+                          onClick={() => navigate(`/post/${selectedNotification.postId}`)}
                         >
                           View Post
                         </button>
