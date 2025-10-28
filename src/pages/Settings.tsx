@@ -175,31 +175,22 @@ const Settings = () => {
       
       <main className="flex-1 lg:ml-0 mt-14 lg:mt-0">
         <div className="max-w-2xl mx-auto">
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border p-6">
-            <h1 className="text-3xl font-bold">Settings</h1>
-            <p className="text-muted-foreground mt-1">Manage your account settings and preferences</p>
+          <div className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border p-4">
+            <h2 className="text-xl font-bold">Settings</h2>
           </div>
 
-          <div className="p-6">
+          <div className="p-4">
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto gap-2">
-                <TabsTrigger value="profile" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Profile</TabsTrigger>
-                <TabsTrigger value="account" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Account</TabsTrigger>
-                <TabsTrigger value="privacy" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Privacy</TabsTrigger>
-                <TabsTrigger value="notifications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Notifications</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="profile">Profile</TabsTrigger>
+                <TabsTrigger value="account">Account</TabsTrigger>
+                <TabsTrigger value="privacy">Privacy</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="profile" className="space-y-6 mt-6">
-                <Card className="p-8 shadow-sm">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Camera className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold">Profile Information</h3>
-                      <p className="text-sm text-muted-foreground">Update your personal details</p>
-                    </div>
-                  </div>
+              <TabsContent value="profile" className="space-y-4">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Profile Information</h3>
                   
                   <div className="flex items-center space-x-4 mb-6">
                     <div className="relative">
@@ -305,9 +296,9 @@ const Settings = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="account" className="space-y-6 mt-6">
-                <Card className="p-8 shadow-sm">
-                  <h3 className="text-xl font-semibold mb-6">Account Settings</h3>
+              <TabsContent value="account" className="space-y-4">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
                   
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -343,9 +334,9 @@ const Settings = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="privacy" className="space-y-6 mt-6">
-                <Card className="p-8 shadow-sm">
-                  <h3 className="text-xl font-semibold mb-6">Privacy Settings</h3>
+              <TabsContent value="privacy" className="space-y-4">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Privacy Settings</h3>
                   
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
@@ -394,9 +385,9 @@ const Settings = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="notifications" className="space-y-6 mt-6">
-                <Card className="p-8 shadow-sm">
-                  <h3 className="text-xl font-semibold mb-6">Notification Preferences</h3>
+              <TabsContent value="notifications" className="space-y-4">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
                   
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">

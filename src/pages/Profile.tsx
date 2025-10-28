@@ -440,7 +440,7 @@ const Profile = () => {
                   <p>No posts yet</p>
                 </div>
               ) : (
-                posts.map((post: any) => (
+                posts.map((post) => (
                   <PostCard
                     key={post.id}
                     postId={post.id}
@@ -455,7 +455,6 @@ const Profile = () => {
                     likes={post.likes}
                     likedBy={post.likedBy}
                     commentsCount={post.commentsCount}
-                    taggedUsers={post.taggedUsers}
                   />
                 ))
               )}

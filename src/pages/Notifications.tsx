@@ -29,7 +29,6 @@ const Notifications = () => {
   const { notificationId } = useParams();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -55,7 +54,6 @@ const Notifications = () => {
       } else {
         setNotifications([]);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -131,21 +129,7 @@ const Notifications = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
             {/* Notifications List */}
             <div className="space-y-2">
-              {loading ? (
-                <div className="space-y-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <Card key={i} className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
-                          <div className="h-3 bg-muted animate-pulse rounded w-1/2" />
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : notifications.length === 0 ? (
+              {notifications.length === 0 ? (
                 <Card className="p-8">
                   <p className="text-center text-muted-foreground">No notifications yet</p>
                 </Card>

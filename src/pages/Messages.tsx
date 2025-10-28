@@ -41,7 +41,6 @@ const Messages = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [followers, setFollowers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -69,7 +68,6 @@ const Messages = () => {
           setFollowers(followersData);
         }
       }
-      setLoading(false);
     });
   }, [user]);
 
@@ -229,19 +227,7 @@ const Messages = () => {
               </div>
               
               <div className="flex-1 overflow-y-auto">
-                {loading ? (
-                  <div className="p-4 space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
-                          <div className="h-3 bg-muted animate-pulse rounded w-1/2" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : searchQuery ? (
+                {searchQuery ? (
                   <div className="space-y-1 p-2">
                     {filteredFollowers.map((follower) => (
                       <div
