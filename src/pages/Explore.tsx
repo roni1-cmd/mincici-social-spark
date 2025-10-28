@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { ExternalLink, Sparkles } from "lucide-react";
 import {
   Accordion,
@@ -12,6 +13,13 @@ import netlifyLogo from "@/assets/netlify-logo.png";
 import facebookLogo from "@/assets/facebook-logo.png";
 
 const Explore = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
   const platforms = [
     {
       name: "Roblox",
@@ -77,7 +85,16 @@ const Explore = () => {
       <div className="flex-1">
         <div className="container max-w-2xl mx-auto p-6">
           <h1 className="text-3xl font-bold mb-6">Explore</h1>
-          <Card className="p-6">
+          {loading ? (
+            <Card className="p-6">
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-muted animate-pulse rounded" />
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <Card className="p-6">
             <Accordion type="single" collapsible className="w-full">
               {platforms.map((platform, index) => (
                 <AccordionItem key={platform.name} value={`item-${index}`}>
@@ -111,6 +128,7 @@ const Explore = () => {
               ))}
             </Accordion>
           </Card>
+          )}
         </div>
       </div>
     </div>

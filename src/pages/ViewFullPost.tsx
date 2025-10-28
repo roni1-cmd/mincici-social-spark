@@ -23,7 +23,7 @@ interface Post {
   likes: number;
   likedBy: string[];
   commentsCount: number;
-  taggedUsers?: string[];
+  taggedUsers?: Array<{ id: string; username: string; displayName: string }>;
 }
 
 interface Comment {
@@ -48,7 +48,7 @@ const ViewFullPost = () => {
   const [newComment, setNewComment] = useState("");
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [taggedUsernames, setTaggedUsernames] = useState<{[key: string]: string}>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!postId) return;
@@ -61,6 +61,7 @@ const ViewFullPost = () => {
         setIsLiked(data.likedBy?.includes(user?.uid || "") || false);
         setLikeCount(data.likes || 0);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -87,25 +88,6 @@ const ViewFullPost = () => {
     return () => unsubscribe();
   }, [postId]);
 
-  useEffect(() => {
-    const fetchTaggedUsernames = async () => {
-      if (!post?.taggedUsers || post.taggedUsers.length === 0) return;
-      
-      const usernames: {[key: string]: string} = {};
-      await Promise.all(
-        post.taggedUsers.map(async (uid) => {
-          const userRef = ref(database, `users/${uid}`);
-          const snapshot = await get(userRef);
-          if (snapshot.exists()) {
-            usernames[uid] = snapshot.val().displayName || snapshot.val().username || "";
-          }
-        })
-      );
-      setTaggedUsernames(usernames);
-    };
-
-    fetchTaggedUsernames();
-  }, [post?.taggedUsers]);
 
   const handleLike = async () => {
     if (!user || !postId || !post) return;
@@ -206,13 +188,27 @@ const ViewFullPost = () => {
     return "Just now";
   };
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen w-full">
+        <Sidebar />
+        <main className="flex-1 lg:ml-0 mt-14 lg:mt-0">
+          <div className="max-w-3xl mx-auto p-4 space-y-4">
+            <div className="h-64 bg-muted animate-pulse rounded-lg" />
+            <div className="h-32 bg-muted animate-pulse rounded-lg" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (!post) {
     return (
       <div className="flex min-h-screen w-full">
         <Sidebar />
         <main className="flex-1 lg:ml-0 mt-14 lg:mt-0">
           <div className="max-w-3xl mx-auto p-4">
-            <p className="text-center text-muted-foreground">Loading post...</p>
+            <p className="text-center text-muted-foreground">Post not found</p>
           </div>
         </main>
       </div>
@@ -271,14 +267,14 @@ const ViewFullPost = () => {
                   {post.taggedUsers && post.taggedUsers.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2 mt-3">
                       <span className="text-sm text-muted-foreground">is with</span>
-                      {post.taggedUsers.map((uid, index) => (
-                        <span key={uid} className="flex items-center gap-1">
+                      {post.taggedUsers.map((taggedUser, index) => (
+                        <span key={taggedUser.id} className="flex items-center gap-1">
                           <Badge
                             variant="secondary"
                             className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                            onClick={() => navigate(`/profile/${uid}`)}
+                            onClick={() => navigate(`/profile/${taggedUser.id}`)}
                           >
-                            {taggedUsernames[uid] || "User"}
+                            {taggedUser.displayName}
                           </Badge>
                           {index < post.taggedUsers.length - 1 && (
                             <span className="text-sm text-muted-foreground">,</span>

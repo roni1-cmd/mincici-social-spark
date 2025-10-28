@@ -44,7 +44,7 @@ interface PostCardProps {
   likes: number;
   likedBy?: string[];
   commentsCount?: number;
-  taggedUsers?: string[];
+  taggedUsers?: Array<{ id: string; username: string; displayName: string }>;
 }
 
 const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, content, imageUrl, timestamp, likes, likedBy = [], commentsCount = 0, taggedUsers = [] }: PostCardProps) => {
@@ -60,29 +60,8 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [viewFullPostOpen, setViewFullPostOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [taggedUsernames, setTaggedUsernames] = useState<{[key: string]: string}>({});
   
   const isOwnPost = user?.uid === userId;
-
-  useEffect(() => {
-    const fetchTaggedUsernames = async () => {
-      if (!taggedUsers || taggedUsers.length === 0) return;
-      
-      const usernames: {[key: string]: string} = {};
-      await Promise.all(
-        taggedUsers.map(async (uid) => {
-          const userRef = ref(database, `users/${uid}`);
-          const snapshot = await get(userRef);
-          if (snapshot.exists()) {
-            usernames[uid] = snapshot.val().username || "";
-          }
-        })
-      );
-      setTaggedUsernames(usernames);
-    };
-
-    fetchTaggedUsernames();
-  }, [taggedUsers]);
   const formatTime = (timestamp: string) => {
     if (!timestamp) return "Just now";
     const date = new Date(timestamp);
@@ -259,18 +238,21 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
             )}
 
             {taggedUsers && taggedUsers.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-muted-foreground">
-                <span>is with</span>
-                {taggedUsers.map((uid, index) => (
-                  <span key={uid} className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-2 mt-2 text-sm">
+                <span className="text-muted-foreground">is with</span>
+                {taggedUsers.map((taggedUser, index) => (
+                  <span key={taggedUser.id} className="flex items-center gap-1">
                     <Badge
                       variant="secondary"
                       className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                      onClick={() => navigate(`/profile/${uid}`)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/profile/${taggedUser.id}`);
+                      }}
                     >
-                      {taggedUsernames[uid] || "user"}
+                      {taggedUser.displayName}
                     </Badge>
-                    {index < taggedUsers.length - 1 && <span>,</span>}
+                    {index < taggedUsers.length - 1 && <span className="text-muted-foreground">,</span>}
                   </span>
                 ))}
               </div>
