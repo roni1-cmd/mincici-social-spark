@@ -16,6 +16,7 @@ const CreatePost = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [taggedUsers, setTaggedUsers] = useState<string[]>([]);
   const { user, userProfile } = useAuth();
   const { toast } = useToast();
@@ -84,6 +85,7 @@ const CreatePost = () => {
       setContent("");
       setImageUrl("");
       setTaggedUsers([]);
+      setDialogOpen(false);
       toast({
         title: "Posted!",
         description: "Your post has been shared.",
@@ -101,7 +103,7 @@ const CreatePost = () => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Card className="p-3 mb-6 cursor-pointer hover:bg-muted/50 transition-colors">
           <div className="flex items-center gap-3">

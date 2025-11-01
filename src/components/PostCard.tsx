@@ -30,6 +30,7 @@ import CommentDialog from "./CommentDialog";
 import ViewFullPostDialog from "./ViewFullPostDialog";
 import { Badge } from "@/components/ui/badge";
 import { useEffect } from "react";
+import { formatTimeAgo } from "@/utils/timeFormat";
 
 interface PostCardProps {
   postId: string;
@@ -83,18 +84,6 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
 
     fetchTaggedUsernames();
   }, [taggedUsers]);
-  const formatTime = (timestamp: string) => {
-    if (!timestamp) return "Just now";
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (days > 0) return `${days}d`;
-    if (hours > 0) return `${hours}h`;
-    return "Just now";
-  };
 
   const handleLike = async () => {
     if (!user) return;
@@ -220,7 +209,7 @@ const PostCard = ({ postId, userId, userEmail, username, displayName, photoURL, 
                   @{handle}
                 </span>
                 <span className="text-muted-foreground text-sm flex-shrink-0">·</span>
-                <span className="text-muted-foreground text-sm flex-shrink-0">{formatTime(timestamp)}</span>
+                <span className="text-muted-foreground text-sm flex-shrink-0">{formatTimeAgo(timestamp)}</span>
               </div>
               
               {isOwnPost && (

@@ -278,80 +278,75 @@ const Profile = () => {
             </Button>
           </div>
 
-          <div className="p-4">
-            <Card className="p-6">
-              <div className="flex flex-col sm:flex-row items-start gap-4">
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-20 w-20">
+          <div className="p-4 space-y-4">
+            {/* Cover Photo */}
+            <div className="relative h-48 bg-gradient-to-r from-primary/20 to-primary/10 rounded-t-lg" />
+            
+            {/* Profile Info Card */}
+            <Card className="relative -mt-20 p-6">
+              {/* Avatar and Follow Button */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-4">
+                <div className="relative -mt-16 sm:-mt-16">
+                  <Avatar className="h-32 w-32 border-4 border-card">
                     {displayProfile?.photoURL ? (
                       <AvatarImage src={displayProfile.photoURL} alt={displayProfile.username} />
                     ) : (
-                      <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-4xl">
                         {userInitial}
                       </AvatarFallback>
                     )}
                   </Avatar>
                   {showActivityStatus && isOnline && (
-                    <div className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-card" />
+                    <div className="absolute bottom-2 right-2 h-6 w-6 rounded-full bg-green-500 border-4 border-card" />
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0 w-full">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between mb-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                      <h3
-                        className="text-xl font-bold break-words"
-                        title={displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}
-                      >
-                        {displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}
-                      </h3>
-                      {isPrivate ? (
-                        <Badge variant="secondary" className="gap-1 flex-shrink-0">
-                          <Lock className="h-3 w-3" />
-                          Private
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="gap-1 flex-shrink-0">
-                          <Globe className="h-3 w-3" />
-                          Public
-                        </Badge>
-                      )}
-                    </div>
-                    {!isOwnProfile && (
-                      <Button
-                        variant={isFollowing ? "outline" : "default"}
-                        size="sm"
-                        onClick={handleFollow}
-                        className="gap-2 flex-shrink-0"
-                      >
-                        {isFollowing ? (
-                          <>
-                            <UserMinus className="h-4 w-4" />
-                            Unfollow
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="h-4 w-4" />
-                            Follow
-                          </>
-                        )}
-                      </Button>
-                    )}
+                <div className="flex-1 flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 w-full sm:mt-4">
+                  <div className="text-center sm:text-left">
+                    <h2 className="text-2xl font-bold">
+                      {displayProfile?.displayName || displayProfile?.email?.split("@")[0] || "User"}
+                    </h2>
+                    <p className="text-muted-foreground">
+                      @{displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}
+                    </p>
                   </div>
-                  <p className="text-muted-foreground break-words" title={`@${displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}`}>
-                    @{displayProfile?.username || displayProfile?.email?.split("@")[0] || "user"}
-                  </p>
-                  {displayProfile?.bio && <p className="text-sm mt-2 break-words">{displayProfile.bio}</p>}
+                  
+                  {!isOwnProfile && (
+                    <Button
+                      variant={isFollowing ? "outline" : "default"}
+                      size="sm"
+                      onClick={handleFollow}
+                      className="gap-2"
+                    >
+                      {isFollowing ? (
+                        <>
+                          <UserMinus className="h-4 w-4" />
+                          Unfollow
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-4 w-4" />
+                          Follow
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
 
-              <div className="mt-6 flex items-center justify-around text-center">
+              {/* Bio */}
+              {displayProfile?.bio && (
+                <p className="text-sm mb-4">{displayProfile.bio}</p>
+              )}
+
+              {/* Stats */}
+              <div className="flex items-center gap-6 mb-4">
                 <div>
-                  <div className="text-xl font-bold">{posts.length}</div>
-                  <div className="text-xs text-muted-foreground">Posts</div>
+                  <span className="font-bold">{posts.length}</span>
+                  <span className="text-muted-foreground text-sm ml-1">Posts</span>
                 </div>
                 <div
-                  className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors"
+                  className="cursor-pointer hover:underline"
                   onClick={() => {
                     if (!isPrivate || isOwnProfile) {
                       setFollowersDialogTab("followers");
@@ -359,11 +354,11 @@ const Profile = () => {
                     }
                   }}
                 >
-                  <div className="text-xl font-bold">{!isPrivate || isOwnProfile ? followersCount : "•"}</div>
-                  <div className="text-xs text-muted-foreground">Followers</div>
+                  <span className="font-bold">{!isPrivate || isOwnProfile ? followersCount : "•"}</span>
+                  <span className="text-muted-foreground text-sm ml-1">Followers</span>
                 </div>
                 <div
-                  className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors"
+                  className="cursor-pointer hover:underline"
                   onClick={() => {
                     if (!isPrivate || isOwnProfile) {
                       setFollowersDialogTab("following");
@@ -371,32 +366,44 @@ const Profile = () => {
                     }
                   }}
                 >
-                  <div className="text-xl font-bold">{!isPrivate || isOwnProfile ? followingCount : "•"}</div>
-                  <div className="text-xs text-muted-foreground">Following</div>
+                  <span className="font-bold">{!isPrivate || isOwnProfile ? followingCount : "•"}</span>
+                  <span className="text-muted-foreground text-sm ml-1">Following</span>
                 </div>
               </div>
 
-              {/* Relationship Section - Left Aligned */}
-              {relationshipPartner && (
-                <div className="mt-6 p-4 rounded-lg bg-muted flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-red-500 fill-red-500 flex-shrink-0" />
-                    <span className="text-sm font-medium">
-                      {displayProfile?.relationshipStatus === "engaged"
-                        ? "Engaged to"
-                        : displayProfile?.relationshipStatus === "married"
-                        ? "Married to"
-                        : displayProfile?.relationshipStatus === "civil_partnership"
-                        ? "In a civil partnership with"
-                        : "In a relationship with"}
-                    </span>
-                  </div>
+              {/* Privacy Badge */}
+              <div className="flex gap-2 mb-4">
+                {isPrivate ? (
+                  <Badge variant="secondary" className="gap-1">
+                    <Lock className="h-3 w-3" />
+                    Private Account
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="gap-1">
+                    <Globe className="h-3 w-3" />
+                    Public Account
+                  </Badge>
+                )}
+              </div>
 
+              {/* Relationship Status */}
+              {relationshipPartner && (
+                <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-2 mb-4">
+                  <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                  <span className="text-sm">
+                    {displayProfile?.relationshipStatus === "engaged"
+                      ? "Engaged to"
+                      : displayProfile?.relationshipStatus === "married"
+                      ? "Married to"
+                      : displayProfile?.relationshipStatus === "civil_partnership"
+                      ? "In a civil partnership with"
+                      : "In a relationship with"}
+                  </span>
                   <div
                     className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => navigate(`/profile/${relationshipPartner.uid}`)}
                   >
-                    <Avatar className="h-7 w-7">
+                    <Avatar className="h-6 w-6">
                       {relationshipPartner.photoURL ? (
                         <AvatarImage src={relationshipPartner.photoURL} alt={relationshipPartner.username} />
                       ) : (
@@ -411,15 +418,15 @@ const Profile = () => {
               )}
 
               {displayProfile?.relationshipStatus === "single" && (
-                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2">
-                  <Heart className="h-4 w-4 flex-shrink-0" />
+                <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-2 mb-4">
+                  <Heart className="h-4 w-4" />
                   <span className="text-sm">Single</span>
                 </div>
               )}
 
               {displayProfile?.relationshipStatus === "widowed" && (
-                <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2">
-                  <Heart className="h-4 w-4 flex-shrink-0" />
+                <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-2 mb-4">
+                  <Heart className="h-4 w-4" />
                   <span className="text-sm">Widowed</span>
                 </div>
               )}

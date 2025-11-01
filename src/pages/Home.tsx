@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import CreatePost from "@/components/CreatePost";
 import PostCard from "@/components/PostCard";
 import { FeedSkeleton } from "@/components/LoadingSkeleton";
+import ActiveFollowers from "@/components/ActiveFollowers";
 
 interface Post {
   id: string;
@@ -19,6 +20,7 @@ interface Post {
   likes: number;
   likedBy?: string[];
   commentsCount?: number;
+  taggedUsers?: string[];
 }
 
 const Home = () => {
@@ -83,6 +85,7 @@ const Home = () => {
                   likes={post.likes}
                   likedBy={post.likedBy}
                   commentsCount={post.commentsCount}
+                  taggedUsers={post.taggedUsers}
                 />
               ))
             )}
@@ -90,13 +93,10 @@ const Home = () => {
         </div>
       </main>
 
-      {/* Trending sidebar - no borders, softer background */}
+      {/* Active Followers sidebar */}
       <aside className="hidden xl:block w-80 p-4">
         <div className="sticky top-4">
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h3 className="font-bold mb-3">Trending</h3>
-            <p className="text-sm text-muted-foreground">Nothing trending yet</p>
-          </div>
+          <ActiveFollowers />
         </div>
       </aside>
     </div>

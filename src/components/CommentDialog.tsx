@@ -185,100 +185,136 @@ const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 rounded-none p-6 flex flex-col">
-        <DialogHeader>
+      <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 rounded-xl md:rounded-3xl p-0 flex flex-col overflow-hidden">
+        <DialogHeader className="p-4 border-b">
           <DialogTitle>Comments</DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-y-auto space-y-4 my-4">
+        <div className="flex-1 overflow-y-auto px-4 py-2">
           {comments.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No comments yet</p>
+            <p className="text-center text-muted-foreground py-12">No comments yet. Be the first to comment!</p>
           ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="flex space-x-3">
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  {comment.photoURL ? (
-                    <AvatarImage src={comment.photoURL} alt={comment.username} />
-                  ) : (
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {comment.username?.charAt(0).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                      <span className="font-semibold text-sm truncate max-w-[120px] sm:max-w-[150px]" title={comment.displayName}>{comment.displayName}</span>
-                      <span className="text-muted-foreground text-xs truncate max-w-[100px] sm:max-w-[120px]" title={`@${comment.username}`}>@{comment.username}</span>
-                    </div>
-                    {comment.userId === user?.uid && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => startEdit(comment)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(comment.id)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+            <div className="space-y-4">
+              {comments.map((comment) => {
+                const parentComment = comment.replyTo
+                  ? comments.find((c) => c.id === comment.replyTo)
+                  : null;
+
+                return (
+                  <div key={comment.id} className="space-y-2">
+                    {/* Show parent comment for replies */}
+                    {parentComment && (
+                      <div className="ml-4 pl-4 border-l-2 border-muted">
+                        <div className="flex items-start gap-2 opacity-60">
+                          <Avatar className="h-6 w-6">
+                            {parentComment.photoURL ? (
+                              <AvatarImage src={parentComment.photoURL} alt={parentComment.username} />
+                            ) : (
+                              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                {parentComment.username?.charAt(0).toUpperCase() || "U"}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-xs">
+                              {parentComment.displayName}
+                            </p>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {parentComment.content}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                  </div>
-                  {comment.replyToUsername && (
-                    <p className="text-xs text-muted-foreground mt-1 truncate" title={`Replying to @${comment.replyToUsername}`}>
-                      Replying to @{comment.replyToUsername}
-                    </p>
-                  )}
-                  {editingCommentId === comment.id ? (
-                    <div className="mt-2 space-y-2">
-                      <Textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="min-h-20"
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleEdit(comment.id)}>
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingCommentId(null);
-                            setEditContent("");
-                          }}
-                        >
-                          Cancel
-                        </Button>
+
+                    {/* Current comment */}
+                    <div className="flex space-x-3">
+                      <Avatar className="h-10 w-10 flex-shrink-0">
+                        {comment.photoURL ? (
+                          <AvatarImage src={comment.photoURL} alt={comment.username} />
+                        ) : (
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {comment.username?.charAt(0).toUpperCase() || "U"}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                            <span className="font-semibold text-sm truncate">{comment.displayName}</span>
+                            <span className="text-muted-foreground text-xs truncate">@{comment.username}</span>
+                          </div>
+                          {comment.userId === user?.uid && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => startEdit(comment)}>
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDelete(comment.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
+                        {comment.replyToUsername && (
+                          <p className="text-xs text-primary mt-1">
+                            Replying to @{comment.replyToUsername}
+                          </p>
+                        )}
+                        {editingCommentId === comment.id ? (
+                          <div className="mt-2 space-y-2">
+                            <Textarea
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                              className="min-h-20"
+                            />
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => handleEdit(comment.id)}>
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingCommentId(null);
+                                  setEditContent("");
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm mt-1 break-words">{comment.content}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto p-0 mt-1 text-xs text-muted-foreground hover:text-primary"
+                              onClick={() => startReply(comment)}
+                            >
+                              <Reply className="h-3 w-3 mr-1" />
+                              Reply
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <>
-                      <p className="text-sm mt-1 break-words">{comment.content}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 mt-1 text-xs text-muted-foreground hover:text-primary"
-                        onClick={() => startReply(comment)}
-                      >
-                        <Reply className="h-3 w-3 mr-1" />
-                        Reply
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 

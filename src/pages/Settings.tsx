@@ -12,12 +12,14 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Loader2, Heart } from "lucide-react";
-import { ref, set, onValue, update } from "firebase/database";
+import { ref, set, onValue, update, get } from "firebase/database";
 import { database } from "@/lib/firebase";
 import RelationshipDialog from "@/components/RelationshipDialog";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { user, userProfile, updateUserProfile, checkUsernameAvailable } = useAuth();
+  const navigate = useNavigate();
   const [username, setUsername] = useState(userProfile?.username || "");
   const [displayName, setDisplayName] = useState(userProfile?.displayName || "");
   const [bio, setBio] = useState(userProfile?.bio || "");
@@ -324,9 +326,59 @@ const Settings = () => {
                     <div className="space-y-2">
                       <Label className="text-destructive">Danger Zone</Label>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Once you delete your account, there is no going back.
+                        Once you delete your account, there is no going back. This will permanently delete all your data.
                       </p>
-                      <Button variant="destructive">
+                      <Button 
+                        variant="destructive"
+                        onClick={async () => {
+                          if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+                            try {
+                              if (user) {
+                                // Delete user data from database
+                                const userRef = ref(database, `users/${user.uid}`);
+                                await set(userRef, null);
+                                
+                                // Delete user's posts
+                                const postsRef = ref(database, "posts");
+                                const postsSnapshot = await get(postsRef);
+                                if (postsSnapshot.exists()) {
+                                  const updates: Record<string, any> = {};
+                                  Object.keys(postsSnapshot.val()).forEach((postId) => {
+                                    if (postsSnapshot.val()[postId].userId === user.uid) {
+                                      updates[`posts/${postId}`] = null;
+                                    }
+                                  });
+                                  if (Object.keys(updates).length > 0) {
+                                    await update(ref(database), updates);
+                                  }
+                                }
+                                
+                                // Delete username reservation
+                                if (userProfile?.username) {
+                                  const usernameRef = ref(database, `usernames/${userProfile.username.toLowerCase()}`);
+                                  await set(usernameRef, null);
+                                }
+                                
+                                // Delete Firebase Auth account
+                                await user.delete();
+                                
+                                toast({
+                                  title: "Account deleted",
+                                  description: "Your account has been permanently deleted.",
+                                });
+                                
+                                navigate("/auth");
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to delete account. Please try again or contact support.",
+                                variant: "destructive",
+                              });
+                            }
+                          }
+                        }}
+                      >
                         Delete Account
                       </Button>
                     </div>
