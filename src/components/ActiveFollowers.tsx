@@ -92,9 +92,7 @@ const ActiveFollowers = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate">{follower.displayName}</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {getLastActiveTime(follower.lastActive)}
-              </p>
+              <p className="text-xs text-muted-foreground truncate">@{follower.username}</p>
             </div>
           </div>
         ))}

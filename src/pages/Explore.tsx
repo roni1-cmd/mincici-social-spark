@@ -1,4 +1,4 @@
-import { ExternalLink, Sparkles, Music } from "lucide-react";
+import { ExternalLink, Sparkles } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -10,6 +10,7 @@ import Sidebar from "@/components/Sidebar";
 import robloxLogo from "@/assets/roblox-logo.png";
 import netlifyLogo from "@/assets/netlify-logo.png";
 import facebookLogo from "@/assets/facebook-logo.png";
+import spotifyLogo from "@/assets/spotify-logo.png";
 import { Separator } from "@/components/ui/separator";
 
 const Explore = () => {
@@ -140,8 +141,8 @@ const Explore = () => {
 
             {/* Spotify Playlists Section */}
             <Card className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Music className="h-6 w-6 text-green-500" />
+              <div className="flex items-center gap-3 mb-4">
+                <img src={spotifyLogo} alt="Spotify" className="h-8 w-8 object-contain" />
                 <h3 className="text-xl font-bold">Spotify Playlists</h3>
               </div>
               <div className="space-y-4">
